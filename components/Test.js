@@ -1,20 +1,342 @@
-import TitleCard from "@/app/blogs/components/TitleCard";
-import Link from "next/link";
+//apiを叩いてオブジェクトを受け取り、TitleCardに渡す
+//仮の配列
+const exam = [
+  {
+    date: "2026/10/7",
+    title:
+      "VirtualBoxでFreeBSDの仮想環境を作ってPHPを勉強する(1/3)　VirtualBoxインストール～SSH接続まで",
+    views: "12",
+    id: 1,
+  },
+  {
+    date: "2026/10/6",
+    title:
+      "VirtualBoxでFreeBSDの仮想環境を作ってPHPを勉強する(2/3)　Apache・PHPのインストール",
+    views: "48",
+    id: 2,
+  },
+  {
+    date: "2026/10/5",
+    title:
+      "VirtualBoxでFreeBSDの仮想環境を作ってPHPを勉強する(3/3)　PHPでHello Worldを表示する",
+    views: "35",
+    id: 3,
+  },
+  {
+    date: "2026/10/3",
+    title: "Dockerで作るNode.js開発環境入門　Dockerfileの書き方と基本コマンド",
+    views: "230",
+    id: 4,
+  },
+  {
+    date: "2026/10/1",
+    title: "JavaScriptの配列メソッドまとめ　map・filter・reduceの使い分け",
+    views: "412",
+    id: 5,
+  },
+  {
+    date: "2026/9/29",
+    title: "GitHub Actionsで自動テストを設定する方法　初心者向けステップガイド",
+    views: "187",
+    id: 6,
+  },
+  {
+    date: "2026/9/27",
+    title: "Reactのカスタムフック入門　useStateとuseEffectを整理する",
+    views: "356",
+    id: 7,
+  },
+  {
+    date: "2026/9/25",
+    title: "TypeScriptの型エイリアスとインターフェースの違いを理解する",
+    views: "298",
+    id: 8,
+  },
+  {
+    date: "2026/9/22",
+    title: "Linuxコマンド基本の10選　ファイル操作からパーミッション設定まで",
+    views: "521",
+    id: 9,
+  },
+  {
+    date: "2026/9/20",
+    title: "MySQLのインデックス設計入門　クエリが遅いときに見直すポイント",
+    views: "143",
+    id: 10,
+  },
+  {
+    date: "2026/9/18",
+    title:
+      "Laravelで簡単なブログアプリを作る(1/2)　プロジェクト作成とルーティング",
+    views: "76",
+    id: 11,
+  },
+  {
+    date: "2026/9/16",
+    title: "Laravelで簡単なブログアプリを作る(2/2)　記事の投稿・編集・削除機能",
+    views: "64",
+    id: 12,
+  },
+  {
+    date: "2026/9/14",
+    title: "Nginxでリバースプロキシを構築する　設定ファイルの書き方と注意点",
+    views: "109",
+    id: 13,
+  },
+  {
+    date: "2026/9/11",
+    title: "Pythonでスクレイピング入門　requestsとBeautifulSoupの基本",
+    views: "675",
+    id: 14,
+  },
+  {
+    date: "2026/9/9",
+    title: "VS Codeのおすすめ拡張機能15選　開発効率を上げる設定も紹介",
+    views: "882",
+    id: 15,
+  },
+  {
+    date: "2026/9/7",
+    title: "SSH鍵認証の設定手順　パスワードなしで安全にサーバーへ接続する",
+    views: "204",
+    id: 16,
+  },
+  {
+    date: "2026/9/4",
+    title: "CSS GridとFlexboxの使い分け　レイアウト設計の考え方",
+    views: "317",
+    id: 17,
+  },
+  {
+    date: "2026/9/2",
+    title: "Gitのブランチ戦略を比較する　Git FlowとGitHub Flowの違い",
+    views: "259",
+    id: 18,
+  },
+  {
+    date: "2026/8/30",
+    title: "REST APIの設計ルール　URL設計とステータスコードの基本",
+    views: "391",
+    id: 19,
+  },
+  {
+    date: "2026/8/28",
+    title:
+      "WSL2でWindowsにLinux開発環境を構築する　インストールから初期設定まで",
+    views: "146",
+    id: 20,
+  },
+  {
+    date: "2026/8/26",
+    title: "Docker Composeで複数コンテナを管理する(1/2)　compose.ymlの基本",
+    views: "168",
+    id: 21,
+  },
+  {
+    date: "2026/8/24",
+    title:
+      "Docker Composeで複数コンテナを管理する(2/2)　DBとWebアプリを連携させる",
+    views: "132",
+    id: 22,
+  },
+  {
+    date: "2026/8/21",
+    title: "Next.jsのApp Router入門　ページ作成とレイアウトの仕組み",
+    views: "447",
+    id: 23,
+  },
+  {
+    date: "2026/8/19",
+    title: "Vue 3のComposition API入門　refとreactiveの違いを理解する",
+    views: "273",
+    id: 24,
+  },
+  {
+    date: "2026/8/17",
+    title: "PostgreSQLとMySQLの違いを比較する　用途別の選び方",
+    views: "305",
+    id: 25,
+  },
+  {
+    date: "2026/8/14",
+    title: "正規表現の基本パターン集　よく使う書き方をまとめて解説",
+    views: "498",
+    id: 26,
+  },
+  {
+    date: "2026/8/12",
+    title: "Rustを始める(1/3)　インストールとCargoの使い方",
+    views: "94",
+    id: 27,
+  },
+  {
+    date: "2026/8/10",
+    title: "Rustを始める(2/3)　所有権と借用の考え方",
+    views: "81",
+    id: 28,
+  },
+  {
+    date: "2026/8/7",
+    title: "Rustを始める(3/3)　構造体とenumで簡単なCLIツールを作る",
+    views: "57",
+    id: 29,
+  },
+  {
+    date: "2026/8/5",
+    title: "AWS EC2でWebサーバーを立てる　インスタンス作成からSSH接続まで",
+    views: "263",
+    id: 30,
+  },
+  {
+    date: "2026/8/3",
+    title: "Terraformでインフラをコード化する　基本的な書き方と実行手順",
+    views: "121",
+    id: 31,
+  },
+  {
+    date: "2026/7/31",
+    title: "Goで作るHTTPサーバー入門　net/httpパッケージの基本",
+    views: "176",
+    id: 32,
+  },
+  {
+    date: "2026/7/29",
+    title: "JavaScriptの非同期処理を整理する　Promiseとasync/await",
+    views: "534",
+    id: 33,
+  },
+  {
+    date: "2026/7/27",
+    title: "Tailwind CSSの導入手順　よく使うユーティリティクラスまとめ",
+    views: "389",
+    id: 34,
+  },
+  {
+    date: "2026/7/24",
+    title: "ESLintとPrettierの設定方法　チーム開発でコードを統一する",
+    views: "212",
+    id: 35,
+  },
+  {
+    date: "2026/7/22",
+    title: "Jestで始めるユニットテスト　テストの書き方とモックの基本",
+    views: "158",
+    id: 36,
+  },
+  {
+    date: "2026/7/20",
+    title: "Redis入門　キャッシュとして使うための基本コマンド",
+    views: "137",
+    id: 37,
+  },
+  {
+    date: "2026/7/17",
+    title: "OAuth 2.0の仕組みをやさしく解説　認可コードフローの流れ",
+    views: "342",
+    id: 38,
+  },
+  {
+    date: "2026/7/15",
+    title: "JWT認証の実装入門　トークンの発行と検証の基本",
+    views: "276",
+    id: 39,
+  },
+  {
+    date: "2026/7/13",
+    title: "Apacheの.htaccess設定　リダイレクトとアクセス制限の書き方",
+    views: "98",
+    id: 40,
+  },
+  {
+    date: "2026/7/10",
+    title: "シェルスクリプト入門　変数・条件分岐・ループの基本",
+    views: "251",
+    id: 41,
+  },
+  {
+    date: "2026/7/8",
+    title: "cronで定期実行を設定する　書式と注意点まとめ",
+    views: "184",
+    id: 42,
+  },
+  {
+    date: "2026/7/6",
+    title: "Pythonの仮想環境を使いこなす　venvとpipの基本操作",
+    views: "427",
+    id: 43,
+  },
+  {
+    date: "2026/7/3",
+    title: "Flaskで作る簡単なWeb API　ルーティングとJSONレスポンス",
+    views: "203",
+    id: 44,
+  },
+  {
+    date: "2026/7/1",
+    title: "SQLのJOINを図解で理解する　INNER JOINとLEFT JOINの違い",
+    views: "615",
+    id: 45,
+  },
+  {
+    date: "2026/6/29",
+    title: "Webpack入門　バンドルの仕組みと基本設定",
+    views: "119",
+    id: 46,
+  },
+  {
+    date: "2026/6/26",
+    title: "Viteで始めるフロントエンド開発　高速な開発環境の作り方",
+    views: "368",
+    id: 47,
+  },
+  {
+    date: "2026/6/24",
+    title: "Chrome DevToolsの使い方　デバッグとパフォーマンス計測の基本",
+    views: "294",
+    id: 48,
+  },
+  {
+    date: "2026/6/22",
+    title: "HTTPとHTTPSの違い　SSL/TLS証明書の基本を理解する",
+    views: "231",
+    id: 49,
+  },
+  {
+    date: "2026/6/19",
+    title: "DNSの仕組みを学ぶ　名前解決の流れとdigコマンド",
+    views: "165",
+    id: 50,
+  },
+  {
+    date: "2026/6/17",
+    title: "Let's Encryptで無料のSSL証明書を導入する手順",
+    views: "147",
+    id: 51,
+  },
+  {
+    date: "2026/6/15",
+    title: "Gitのコンフリクト解消方法　発生原因と対処の手順",
+    views: "482",
+    id: 52,
+  },
+  {
+    date: "2026/6/12",
+    title: "Markdown記法のまとめ　READMEを書くための基本",
+    views: "326",
+    id: 53,
+  },
+  {
+    date: "2026/6/10",
+    title: "プログラミング学習の進め方　挫折しないためのロードマップ",
+    views: "703",
+    id: 54,
+  },
+  {
+    date: "2026/6/8",
+    title: "ブログ運営で使っている開発ツールを紹介する",
+    views: "88",
+    id: 55,
+  },
+];
 
-export default function Test() {
-  let elements = [];
-  for (let e = 0; e <= 10; e++) {
-    elements.push(
-      <Link href="/blogs/1" key={e}>
-        <TitleCard
-          date={"2026/10/7"}
-          title={
-            "VirtualBoxでFreeBSDの仮想環境を作ってPHPを勉強する(1/3)　VirtualBoxインストール～SSH接続まで"
-          }
-          views={"12"}
-        ></TitleCard>
-      </Link>,
-    );
-  }
-  return <>{elements}</>;
-}
+export default exam;

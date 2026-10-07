@@ -1,21 +1,23 @@
-import { Base } from "@/components/Base";
-import Button from "@/components/Button";
-import Card from "@/components/Card";
-import { ErrorMessage } from "@/components/ErrorMessage";
+import { Base } from "@/components/ui/Base";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import { ErrorMessage } from "@/components/ui/text/ErrorMessage";
 import Link from "next/link";
-// py - 8;
+import { cn } from "@/lib/utils";
+import { textSize } from "@/lib/textStyle";
+import CommentMenu from "../components/CommentMenu";
 
 export default function blogs() {
   return (
     <>
       <Base>
-        <Card>
+        <Card className="font-bold text-2xl text-center">
           <div className="text-gray-400">作成日:2026/10/7 更新:2026/10/8</div>
-          <div className="font-bold text-2xl text-center">
+          <div className={cn("font-bold", textSize.lg, "text-center")}>
             VirtualBoxでFreeBSDの仮想環境を作ってPHPを勉強する(1/3)　VirtualBoxインストール～SSH接続まで
           </div>
           <div className="text-gray-400 flex justify-end">閲覧数:12</div>
-          <div className="flex flex-col gap-2 px-8">
+          <div className="flex flex-col gap-2 px-2 lg:px-8">
             <div className="font-bold text-2xl border-b border-gray-600 pb-1">
               小見出し
             </div>
@@ -89,7 +91,7 @@ export default function blogs() {
           </div>
         </Card>
         <div className="flex justify-end gap-2 py-2">
-          <Link href="/blogs/1/editor">
+          <Link href="/blogs/1/editor" className="hidden lg:inline">
             <Button backGroundColor={"orange"} textColor={"white"}>
               編集
             </Button>
@@ -101,35 +103,7 @@ export default function blogs() {
           </Link>
         </div>
         <Card>
-          <div className="flex flex-col gap-4">
-            <div className="underline">コメント</div>
-            <div>
-              <div>aaa:わかりやすかった</div>
-              <div>bbb:役に立った</div>
-            </div>
-            <div className="bg-gray-200 rounded-xl p-2 flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <span className="text-white">名前：</span>
-                <input type="text" className="bg-white rounded-xl h-7"></input>
-                <div>
-                  <div>
-                    <ErrorMessage>＊名前を入力してください</ErrorMessage>
-                  </div>
-                  <div>
-                    <ErrorMessage>
-                      ＊コメント本文を入力してください
-                    </ErrorMessage>
-                  </div>
-                </div>
-                <span className="ml-auto">
-                  <Button backGroundColor={"sky"} textColor={"white"}>
-                    投稿
-                  </Button>
-                </span>
-              </div>
-              <textarea className="bg-white rounded-xl h-20 w-full"></textarea>
-            </div>
-          </div>
+          <CommentMenu />
         </Card>
       </Base>
     </>
