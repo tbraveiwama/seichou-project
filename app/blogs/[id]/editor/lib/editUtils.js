@@ -106,15 +106,6 @@ function wrapSelection(p) {
 function minTitle() {
   const { isOk, selection, range } = getSelectionAndRange();
   if (!isOk) return;
-  if (!selection.isCollapsed) {
-    replaceSelectionWithBlock(
-      selection,
-      range,
-      "mt",
-      styleText.minTitle,
-    );
-    return;
-  }
   if (callNodeInElement(selection.anchorNode, "DIV")) {
     if (selection.isCollapsed) {
       const div = document.createElement("div");
@@ -154,10 +145,6 @@ function minTitle() {
 function code() {
   const { isOk, selection, range } = getSelectionAndRange();
   if (!isOk) return;
-  if (!selection.isCollapsed) {
-    replaceSelectionWithBlock(selection, range, "cd", styleText.code);
-    return;
-  }
   if (callNodeInElement(selection.anchorNode, "DIV")) {
     if (selection.isCollapsed) {
       const div = document.createElement("DIV");
@@ -187,50 +174,6 @@ function code() {
   selection.removeAllRanges();
   selection.addRange(nextRange);
   cleanZwspSpan("span");
-}
-
-function replaceSelectionWithBlock(selection, range, id, style) {
-  const startBlock = getSpecialBlock(range.startContainer);
-  const endBlock = getSpecialBlock(range.endContainer);
-  const content = range.cloneContents();
-  if (!content.hasChildNodes()) return;
-
-  const block = document.createElement("div");
-  block.id = id;
-  block.style.cssText = style;
-
-  if (startBlock && startBlock === endBlock) {
-    const beforeRange = document.createRange();
-    beforeRange.selectNodeContents(startBlock);
-    beforeRange.setEnd(range.startContainer, range.startOffset);
-
-    const afterRange = document.createRange();
-    afterRange.selectNodeContents(startBlock);
-    afterRange.setStart(range.endContainer, range.endOffset);
-
-    const beforeContent = beforeRange.cloneContents();
-    const afterContent = afterRange.cloneContents();
-    block.appendChild(range.extractContents());
-
-    const replacementBlocks = [];
-    if (beforeContent.hasChildNodes()) {
-      replacementBlocks.push(createSpecialBlock(startBlock, beforeContent));
-    }
-    replacementBlocks.push(block);
-    if (afterContent.hasChildNodes()) {
-      replacementBlocks.push(createSpecialBlock(startBlock, afterContent));
-    }
-    startBlock.replaceWith(...replacementBlocks);
-  } else {
-    block.appendChild(range.extractContents());
-    range.insertNode(block);
-    bodyDirectlySet(block);
-  }
-
-  const blockRange = document.createRange();
-  blockRange.selectNodeContents(block);
-  selection.removeAllRanges();
-  selection.addRange(blockRange);
 }
 
 //rangeをspanに置き換え
@@ -280,9 +223,9 @@ function callNodeInElement(node, element) {
   }
 }
 
-//渡されたNodeが特定のidに入っているか否かを判定する。返り値は該当Elementかnull
+//渡されたNodeが特定のidに入っているか否かを判定する。返り値は該当Element
 function callNodeInId(node, id) {
-  if (node.nodeType === Node.ELEMENT_NODE && node.id === id) return node;
+  if (node.nodeType === Node.ELEMENT_NODE && node.id === id) return null;
   while (node.parentElement) {
     if (node.parentElement.id === id) {
       return node.parentElement;
@@ -380,7 +323,7 @@ function bodyDirectlySet(div) {
 //本文用。キャレットの位置が<div>内なら改行して脱出する
 function mainText() {
   //キャレットの位置を取得
-  const { isOk, selection, range } = getSelectionAndRange();
+  const { isOk, selection } = getSelectionAndRange();
   if (!isOk) return;
 
   if (selection.isCollapsed) {
@@ -388,68 +331,7 @@ function mainText() {
     InsertAndEscape(selection, br);
     return;
   }
-
-  const startBlock = getSpecialBlock(range.startContainer);
-  const endBlock = getSpecialBlock(range.endContainer);
-  if (startBlock && startBlock === endBlock) {
-    const beforeRange = document.createRange();
-    beforeRange.selectNodeContents(startBlock);
-    beforeRange.setEnd(range.startContainer, range.startOffset);
-
-    const afterRange = document.createRange();
-    afterRange.selectNodeContents(startBlock);
-    afterRange.setStart(range.endContainer, range.endOffset);
-
-    const beforeContent = beforeRange.cloneContents();
-    const content = range.cloneContents();
-    const afterContent = afterRange.cloneContents();
-    if (!content.hasChildNodes()) return;
-
-    const bodyText = document.createElement("span");
-    bodyText.style.cssText = "font-weight: normal;font-size: 16px";
-    bodyText.appendChild(content);
-
-    const bodyBlock = document.createElement("div");
-    bodyBlock.appendChild(bodyText);
-
-    const replacementBlocks = [];
-    if (beforeContent.hasChildNodes()) {
-      replacementBlocks.push(createSpecialBlock(startBlock, beforeContent));
-    }
-    replacementBlocks.push(bodyBlock);
-    if (afterContent.hasChildNodes()) {
-      replacementBlocks.push(createSpecialBlock(startBlock, afterContent));
-    }
-    startBlock.replaceWith(...replacementBlocks);
-
-    const bodyRange = document.createRange();
-    bodyRange.selectNodeContents(bodyText);
-    selection.removeAllRanges();
-    selection.addRange(bodyRange);
-    return;
-  }
-
   wrapSelection("font-weight: normal;font-size: 16px");
-}
-
-function getSpecialBlock(node) {
-  let element =
-    node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
-  while (element && element.id !== "body") {
-    if (element.tagName === "DIV" && ["cd", "mt"].includes(element.id)) {
-      return element;
-    }
-    element = element.parentElement;
-  }
-  return null;
-}
-
-function createSpecialBlock(template, content) {
-  const block = document.createElement("div");
-  block.id = template.id;
-  block.style.cssText = template.style.cssText;
-  block.appendChild(content);
-  return block;
 }
 
 function InsertAndEscape(selection, newNode) {
