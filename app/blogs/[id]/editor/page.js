@@ -57,13 +57,13 @@ export default function Blogs() {
             ここにタイトルを入力
           </div>
           <div
-            className="flex flex-col gap-2 px-8"
+            className="px-8 text-base"
             id="body"
             contentEditable="true"
             onKeyDown={keyController}
             onPaste={handlePaste}
           >
-          ここにテキストを入力
+            ここにテキストを入力
           </div>
         </Card>
         <div className="flex justify-end gap-2">
