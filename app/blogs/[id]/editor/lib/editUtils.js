@@ -174,137 +174,68 @@ function mainText() {
 
 //小見出し挿入用
 function minTitle() {
-  const { isOk, selection, range } = getSelectionAndRange();
-  if (!isOk) return;
-  //<div>内の時の処理
-  if (callNodeInElement(selection.anchorNode, "DIV")) {
-    //body以外の<div>の中に入っていて、選択範囲がなければ、そこで<div>を分割して「小見出し」を挿入する
-    if (selection.isCollapsed) {
-      //親<div>の参照を取得
-      const parent = callNodeInElement(selection.anchorNode, "DIV");
-      //rangeに指定してクローン、結合、置き換え
-      //初めからキャレットまで
-      const firstRange = document.createRange();
-      firstRange.setStartBefore(parent);
-      firstRange.setEnd(selection.anchorNode, selection.anchorOffset);
-      const firstContent = firstRange.cloneContents();
-      //キャレットから終わりまで
-      const lastRange = document.createRange();
-      lastRange.setStart(selection.anchorNode, selection.anchorOffset);
-      lastRange.setEndAfter(parent);
-      const lastContent = lastRange.cloneContents();
-      //「小見出し」
-      const div = document.createElement("div");
-      div.style.cssText = styleText.minTitle;
-      const text = document.createTextNode("小見出し");
-      div.appendChild(text);
-      div.id = "mt";
-      //結合して置き換え
-      parent.replaceWith(firstContent, div, lastContent);
-      //新しい選択範囲
-      const nextRange = document.createRange();
-      nextRange.selectNode(div);
-      //現在の選択範囲を削除
-      selection.removeAllRanges();
-      //新しく作成した選択範囲を追加
-      selection.addRange(nextRange);
-      //無駄なタグが残ってると不具合が出るので
-      cleanZwspTag("span");
-      cleanZwspTag("div");
-      return;
-    } else {
-      //選択範囲があれば、選択範囲をクローン、<div>に格納、前後をクローン、結合して置き換え
-      //親<div>の参照を取得
-      const parent = callNodeInElement(selection.anchorNode, "DIV");
-      //選択範囲のクローン
-      const content = range.cloneContents();
-      //タグ作成
-      const div = document.createElement("div");
-      div.style.cssText = styleText.minTitle;
-      div.id = "mt";
-      div.appendChild(content);
-      //初めから選択範囲の始点まで
-      const firstRange = document.createRange();
-      firstRange.setStartBefore(parent);
-      firstRange.setEnd(selection.anchorNode, selection.anchorOffset);
-      const firstContent = firstRange.extractContents();
-      //選択範囲の終点から終わりまで
-      const lastRange = document.createRange();
-      lastRange.setStart(selection.focusNode, selection.focusOffset);
-      lastRange.setEndAfter(parent);
-      const lastContent = lastRange.extractContents();
-      //結合して置き換え
-      parent.replaceWith(firstContent, div, lastContent);
-      //新しい選択範囲
-      const nextRange = document.createRange();
-      nextRange.selectNode(div);
-      //現在の選択範囲を削除
-      selection.removeAllRanges();
-      //新しく作成した選択範囲を追加
-      selection.addRange(nextRange);
-      //無駄なタグが残ってると不具合が出るので
-      cleanZwspTag("span");
-      cleanZwspTag("div");
-      return;
-    }
-  }
-  //<div>外の時の処理
-  //キャレットのみの場合
-  else if (selection.isCollapsed) {
-    const div = document.createElement("div");
-    div.style.cssText = styleText.minTitle;
-    const text = document.createTextNode("小見出し");
-    div.appendChild(text);
-    div.id = "mt";
-    range.insertNode(div);
-    brController(div);
-    bodyDirectlySet(div);
-    //「小見出し」を選択した状態にする
-    //選択範囲を作る
-    const nextRange = document.createRange();
-    nextRange.setStart(div.firstChild, 0); //divはnodeで、先ほどrangeに挿入したのでnextRangeの開始・終了位置として指定できる
-    nextRange.setEnd(div.firstChild, 4);
-    //現在の選択範囲を削除
-    selection.removeAllRanges();
-    //新しく作成した選択範囲を追加
-    selection.addRange(nextRange);
-    //無駄spanが残ってると不具合が出るので
-    cleanZwspTag("span");
-  }
-  //選択範囲がある場合
-  else {
-    wrap(range, styleText.minTitle, "div");
-    //無駄spanが残ってると不具合が出るので
-    cleanZwspTag("span");
-  }
+  wrapDiv(styleText.minTitle, "mt", "小見出し");
 }
 
 //コード用の黒いエリアを出す
 function code() {
+  wrapDiv(styleText.code, "cd", "//ここにコードを入力");
+}
+
+//<div>に加工用※未完成
+function wrapDiv(cssText, id, childText) {
   const { isOk, selection, range } = getSelectionAndRange();
   if (!isOk) return;
-
-  if (callNodeInElement(selection.anchorNode, "DIV")) {
-    if (selection.isCollapsed) {
+  console.log(getDivSelectionRelation(selection));
+  switch (getDivSelectionRelation(selection)) {
+    case "inside":
       //親<div>の参照を取得
       const parent = callNodeInElement(selection.anchorNode, "DIV");
-      //rangeに指定してクローン、結合、置き換え
-      //初めからキャレットまで
-      const firstRange = document.createRange();
-      firstRange.setStartBefore(parent);
-      firstRange.setEnd(selection.anchorNode, selection.anchorOffset);
-      const firstContent = firstRange.cloneContents();
-      //キャレットから終わりまで
-      const lastRange = document.createRange();
-      lastRange.setStart(selection.anchorNode, selection.anchorOffset);
-      lastRange.setEndAfter(parent);
-      const lastContent = lastRange.cloneContents();
-      //「小見出し」
-      const div = document.createElement("div");
-      div.style.cssText = styleText.code;
-      const text = document.createTextNode("小見出し");
-      div.appendChild(text);
-      div.id = "mt";
+      let firstContent;
+      let div = document.createElement("div");
+      div.style.cssText = cssText;
+      div.id = id;
+      let lastContent;
+      //選択範囲がキャレットのみ
+      if (selection.isCollapsed) {
+        //rangeに指定してクローン、結合、置き換え
+        //初めからキャレットまで
+        const firstRange = document.createRange();
+        firstRange.setStartBefore(parent);
+        firstRange.setEnd(selection.anchorNode, selection.anchorOffset);
+        firstContent = firstRange.cloneContents();
+        //キャレットから終わりまで
+        const lastRange = document.createRange();
+        lastRange.setStart(selection.anchorNode, selection.anchorOffset);
+        lastRange.setEndAfter(parent);
+        lastContent = lastRange.cloneContents();
+        //「小見出し」
+        const text = document.createTextNode(childText);
+        div.appendChild(text);
+        //選択範囲がある場合
+      } else {
+        //選択範囲のクローン
+        const content = range.cloneContents();
+
+        //ぴったり選択範囲が<div>とかぶっている場合に不具合が起こるため、rangeを広げる
+        if (range.toString() === parent.textContent) {
+          range.setStartBefore(callNodeInElement(range.startContainer, "DIV"));
+          range.setEndAfter(callNodeInElement(range.endContainer, "DIV"));
+        }
+
+        //タグ作成
+        div.appendChild(content);
+        //初めから選択範囲の始点まで
+        const firstRange = document.createRange();
+        firstRange.setStartBefore(parent);
+        firstRange.setEnd(selection.anchorNode, selection.anchorOffset);
+        firstContent = firstRange.extractContents();
+        //選択範囲の終点から終わりまで
+        const lastRange = document.createRange();
+        lastRange.setStart(selection.focusNode, selection.focusOffset);
+        lastRange.setEndAfter(parent);
+        lastContent = lastRange.extractContents();
+      }
       //結合して置き換え
       parent.replaceWith(firstContent, div, lastContent);
       //新しい選択範囲
@@ -317,68 +248,52 @@ function code() {
       //無駄なタグが残ってると不具合が出るので
       cleanZwspTag("span");
       cleanZwspTag("div");
-      return;
-    } else {
-      //選択範囲があれば、選択範囲をクローン、<div>に格納、前後をクローン、結合して置き換え
-      //親<div>の参照を取得
-      const parent = callNodeInElement(selection.anchorNode, "DIV");
-      //選択範囲のクローン
-      const content = range.cloneContents();
-      //タグ作成
-      const div = document.createElement("div");
-      div.style.cssText = styleText.code;
-      div.id = "mt";
-      div.appendChild(content);
-      //初めから選択範囲の始点まで
-      const firstRange = document.createRange();
-      firstRange.setStartBefore(parent);
-      firstRange.setEnd(selection.anchorNode, selection.anchorOffset);
-      const firstContent = firstRange.extractContents();
-      //選択範囲の終点から終わりまで
-      const lastRange = document.createRange();
-      lastRange.setStart(selection.focusNode, selection.focusOffset);
-      lastRange.setEndAfter(parent);
-      const lastContent = lastRange.extractContents();
-      //結合して置き換え
-      parent.replaceWith(firstContent, div, lastContent);
-      //新しい選択範囲
-      const nextRange = document.createRange();
-      nextRange.selectNode(div);
-      //現在の選択範囲を削除
-      selection.removeAllRanges();
-      //新しく作成した選択範囲を追加
-      selection.addRange(nextRange);
-      //無駄なタグが残ってると不具合が出るので
-      cleanZwspTag("span");
-      cleanZwspTag("div");
-      return;
-    }
-  }
-  //<div>外の時の処理
-  //キャレットのみの場合
-  else if (selection.isCollapsed) {
-    const div = document.createElement("div");
-    div.style.cssText = styleText.code;
-    div.id = "cd";
-    const text = document.createTextNode("//ここにコードを入力");
-    div.appendChild(text);
-    range.insertNode(div);
+      break;
 
-    brController(div);
-    bodyDirectlySet(div);
+    default:
+      //<div>外の時の処理
+      //キャレットのみの場合
+      if (selection.isCollapsed) {
+        const div = document.createElement("div");
+        div.style.cssText = cssText;
+        div.id = id;
+        const text = document.createTextNode(childText);
+        div.appendChild(text);
+        range.insertNode(div);
 
-    const nextRange = document.createRange();
-    nextRange.setStart(div.firstChild, 0);
-    nextRange.setEnd(div.firstChild, div.firstChild.textContent.length);
-    selection.removeAllRanges();
-    selection.addRange(nextRange);
-    cleanZwspTag("span");
-  }
-  //選択範囲がある場合
-  else {
-    wrap(range, styleText.code, "div");
-    //無駄spanが残ってると不具合が出るので
-    cleanZwspTag("span");
+        brController(div);
+        bodyDirectlySet(div);
+
+        const nextRange = document.createRange();
+        nextRange.setStart(div.firstChild, 0);
+        nextRange.setEnd(div.firstChild, div.firstChild.textContent.length);
+        selection.removeAllRanges();
+        selection.addRange(nextRange);
+        cleanZwspTag("span");
+      }
+      //選択範囲がある場合
+      else {
+        //rangeを広げる
+        const anchor = callNodeInElement(range.startContainer, "DIV");
+        const focus = callNodeInElement(range.endContainer, "DIV");
+        if (anchor) {
+          range.setStartBefore(anchor);
+        }
+        if (focus) {
+          range.setEndAfter(focus);
+        }
+        //range内のdivを展開してから
+        const content = range.extractContents();
+        const divArray = content.querySelectorAll("div");
+        divArray.forEach((div) => {
+          div.replaceWith(...div.childNodes);
+        });
+        range.insertNode(content);
+        wrap(range, cssText, "div");
+        //無駄spanが残ってると不具合が出るので
+        cleanZwspTag("span");
+      }
+      break;
   }
 }
 
