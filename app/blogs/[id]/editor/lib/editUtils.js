@@ -147,6 +147,7 @@ function mainText() {
       newRange.setStartBefore(first);
       newRange.setEndAfter(last);
       wrap(newRange, styleText.mainText);
+
       cleanZwspTag("div");
       break;
     }
@@ -187,14 +188,17 @@ function wrapDiv(cssText, id, childText) {
   const { isOk, selection, range } = getSelectionAndRange();
   if (!isOk) return;
   console.log(getDivSelectionRelation(selection));
+
+  //挿入するエレメントを宣言
+  const div = document.createElement("div");
+  div.style.cssText = cssText;
+  div.id = id;
+
   switch (getDivSelectionRelation(selection)) {
     case "inside":
       //親<div>の参照を取得
       const parent = callNodeInElement(selection.anchorNode, "DIV");
       let firstContent;
-      let div = document.createElement("div");
-      div.style.cssText = cssText;
-      div.id = id;
       let lastContent;
       //選択範囲がキャレットのみ
       if (selection.isCollapsed) {
@@ -254,9 +258,6 @@ function wrapDiv(cssText, id, childText) {
       //<div>外の時の処理
       //キャレットのみの場合
       if (selection.isCollapsed) {
-        const div = document.createElement("div");
-        div.style.cssText = cssText;
-        div.id = id;
         const text = document.createTextNode(childText);
         div.appendChild(text);
         range.insertNode(div);
@@ -269,17 +270,18 @@ function wrapDiv(cssText, id, childText) {
         nextRange.setEnd(div.firstChild, div.firstChild.textContent.length);
         selection.removeAllRanges();
         selection.addRange(nextRange);
-        cleanZwspTag("span");
       }
       //選択範囲がある場合
       else {
+        //idが同じ場合
         //rangeを広げる
         const anchor = callNodeInElement(range.startContainer, "DIV");
         const focus = callNodeInElement(range.endContainer, "DIV");
-        if (anchor) {
+        console.log(anchor);
+        if (anchor && anchor.id === id) {
           range.setStartBefore(anchor);
         }
-        if (focus) {
+        if (focus && focus.id === id) {
           range.setEndAfter(focus);
         }
         //range内のdivを展開してから
@@ -289,16 +291,17 @@ function wrapDiv(cssText, id, childText) {
           div.replaceWith(...div.childNodes);
         });
         range.insertNode(content);
-        wrap(range, cssText, "div");
+        wrap(range, cssText, "div", id);
         //無駄spanが残ってると不具合が出るので
-        cleanZwspTag("span");
       }
+      cleanZwspTag("div");
+      cleanZwspTag("span");
       break;
   }
 }
 
 //rangeをspanに置き換え
-function wrap(range, p, element = "span") {
+function wrap(range, p, element = "span", id = null) {
   //空のタグを生成
   const draftSpan = document.createElement(element);
 
@@ -326,6 +329,10 @@ function wrap(range, p, element = "span") {
 
   //newSpanの子要素に切り取った部分を追加
   newSpan.appendChild(content);
+  //id追加
+  if (id) {
+    newSpan.id = id;
+  }
 
   //extractContents()で中身を抜いたことで、range自体は「中身が空になった、元の位置を指すマーカー」として残っているので、そこにinsertNodeで新しいspanをはめ込む。
   range.insertNode(newSpan);
