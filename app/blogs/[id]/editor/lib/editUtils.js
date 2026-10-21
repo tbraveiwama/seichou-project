@@ -184,7 +184,7 @@ function code() {
 }
 
 //<div>に加工用※未完成
-function wrapDiv(cssText, id, childText) {
+function wrapDiv(cssText, className, childText) {
   const { isOk, selection, range } = getSelectionAndRange();
   if (!isOk) return;
   console.log(getDivSelectionRelation(selection));
@@ -192,7 +192,7 @@ function wrapDiv(cssText, id, childText) {
   //挿入するエレメントを宣言
   const div = document.createElement("div");
   div.style.cssText = cssText;
-  div.id = id;
+  div.className = className;
 
   switch (getDivSelectionRelation(selection)) {
     case "inside":
@@ -278,10 +278,10 @@ function wrapDiv(cssText, id, childText) {
         const anchor = callNodeInElement(range.startContainer, "DIV");
         const focus = callNodeInElement(range.endContainer, "DIV");
         console.log(anchor);
-        if (anchor && anchor.id === id) {
+        if (anchor && anchor.className === className) {
           range.setStartBefore(anchor);
         }
-        if (focus && focus.id === id) {
+        if (focus && focus.className === className) {
           range.setEndAfter(focus);
         }
         //range内のdivを展開してから
@@ -291,7 +291,7 @@ function wrapDiv(cssText, id, childText) {
           div.replaceWith(...div.childNodes);
         });
         range.insertNode(content);
-        wrap(range,selection,cssText, "div", id);
+        wrap(range,selection,cssText, "div", className);
         //無駄spanが残ってると不具合が出るので
       }
       cleanZwspTag("div");
@@ -301,7 +301,7 @@ function wrapDiv(cssText, id, childText) {
 }
 
 //rangeをspanに置き換え
-function wrap(range, selection, p, element = "span", id = null) {
+function wrap(range, selection, p, element = "span", className = null) {
   //空のタグを生成
   const draftSpan = document.createElement(element);
 
@@ -330,8 +330,8 @@ function wrap(range, selection, p, element = "span", id = null) {
   //newSpanの子要素に切り取った部分を追加
   newSpan.appendChild(content);
   //id追加
-  if (id) {
-    newSpan.id = id;
+  if (className) {
+    newSpan.className = className;
   }
 
   //extractContents()で中身を抜いたことで、range自体は「中身が空になった、元の位置を指すマーカー」として残っているので、そこにinsertNodeで新しいspanをはめ込む。
@@ -639,7 +639,7 @@ function keyController(event) {
     const parentElement = node.parentElement;
     //parentElementが<div>で、idがmtなら
     if (parentElement.tagName === "DIV") {
-      if (parentElement.id === "mt") {
+      if (parentElement.className === "mt") {
         //新しく範囲を作成
         const newRange = document.createRange();
         //parentElementの後ろに<br>を挿入
@@ -654,7 +654,7 @@ function keyController(event) {
         return;
       }
     }
-    if (parentElement.id !== "title") {
+    if (parentElement.className !== "title") {
       document.execCommand("insertLineBreak");
     }
   }
