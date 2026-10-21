@@ -1,1 +1,13 @@
 @import "tailwindcss";
+
+@layer components {
+    .cd {
+
+    }
+    .mt {
+
+    }
+    .bt{
+        
+    }
+}

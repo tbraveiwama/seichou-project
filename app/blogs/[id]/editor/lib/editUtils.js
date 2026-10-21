@@ -64,11 +64,11 @@ function wrapSelection(p) {
   //div内にいるのか、divを囲んでいるのか、始点又は終点がdiv内にあるかを判断し、適切な処理を行う
   switch (getDivSelectionRelation(selection)) {
     case "outside": {
-      wrap(range, p);
+      wrap(range,selection,p);
       break;
     }
     case "inside": {
-      wrap(range, p);
+      wrap(range,selection,p);
       break;
     }
     case "enclosed": {
@@ -82,7 +82,7 @@ function wrapSelection(p) {
         const divRange = document.createRange();
         divRange.selectNodeContents(div);
         // ラップ
-        wrap(divRange, p);
+        wrap(divRange,selection,p);
       });
       range.insertNode(content);
 
@@ -90,12 +90,12 @@ function wrapSelection(p) {
       const firstRange = document.createRange();
       firstRange.setStart(range.startContainer, range.startOffset);
       firstRange.setEndBefore(divArray[0]);
-      wrap(firstRange, p);
+      wrap(firstRange,selection,p);
 
       const endRange = document.createRange();
       endRange.setStartAfter(divArray[divArray.length - 1]);
       endRange.setEnd(range.endContainer, range.endOffset);
-      wrap(endRange, p);
+      wrap(endRange,selection,p);
     }
   }
   cleanUp("span");
@@ -117,7 +117,7 @@ function mainText() {
   //div内にいるのか、divを囲んでいるのか、始点又は終点がdiv内にあるかを判断し、適切な処理を行う
   switch (getDivSelectionRelation(selection)) {
     case "outside": {
-      wrap(range, styleText.mainText);
+      wrap(range,selection,styleText.mainText);
       break;
     }
     case "inside": {
@@ -146,7 +146,7 @@ function mainText() {
       const newRange = document.createRange();
       newRange.setStartBefore(first);
       newRange.setEndAfter(last);
-      wrap(newRange, styleText.mainText);
+      wrap(newRange,selection,styleText.mainText);
 
       cleanZwspTag("div");
       break;
@@ -165,7 +165,7 @@ function mainText() {
         div.replaceWith(...div.childNodes);
       });
       range.insertNode(content);
-      wrap(range, styleText.mainText);
+      wrap(range,selection,styleText.mainText);
       cleanZwspTag("div");
       break;
     }
@@ -291,7 +291,7 @@ function wrapDiv(cssText, id, childText) {
           div.replaceWith(...div.childNodes);
         });
         range.insertNode(content);
-        wrap(range, cssText, "div", id);
+        wrap(range,selection,cssText, "div", id);
         //無駄spanが残ってると不具合が出るので
       }
       cleanZwspTag("div");
@@ -301,7 +301,7 @@ function wrapDiv(cssText, id, childText) {
 }
 
 //rangeをspanに置き換え
-function wrap(range, p, element = "span", id = null) {
+function wrap(range, selection, p, element = "span", id = null) {
   //空のタグを生成
   const draftSpan = document.createElement(element);
 
@@ -336,6 +336,9 @@ function wrap(range, p, element = "span", id = null) {
 
   //extractContents()で中身を抜いたことで、range自体は「中身が空になった、元の位置を指すマーカー」として残っているので、そこにinsertNodeで新しいspanをはめ込む。
   range.insertNode(newSpan);
+
+  selection.removeAllRanges();
+  selection.addRange(range);
 }
 
 //渡されたNodeが特定のElementに入っているか否かを判定する。返り値は該当Element
