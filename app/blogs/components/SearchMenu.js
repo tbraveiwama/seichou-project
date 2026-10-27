@@ -1,3 +1,4 @@
+"use client"
 import Button from "@/components/ui/Button";
 import Select from "@/components/ui/Select";
 import { TitleText } from "@/components/ui/text/TitleText";
@@ -32,7 +33,7 @@ export default function SearchMenu({ sort, setSort, setSearchWord }) {
           <option value="date">作成日時 ▼</option>
           <option value="views">閲覧数 ▼</option>
         </Select>
-        <Link href="/blogs/1/editor" className="hidden lg:inline">
+        <Link href="/blogs/editor" className="hidden lg:inline">
           <Button backGroundColor="orange" textColor="white">
             新規作成
           </Button>

@@ -4,7 +4,7 @@ import SearchMenu from "./components/SearchMenu";
 import BlogLinkList from "./components/BlogLinkList";
 import { useState, useEffect } from "react";
 
-export default function Pages() {
+export default function Blogs() {
   const [currentView, setCurrentView] = useState("articles");
   const [pageList, setPageList] = useState();
   //並べ替え・検索ワードを親が持ち、子にセッターを渡す
@@ -21,6 +21,10 @@ export default function Pages() {
     // fetchPageList();
     console.log("並び順:", sort);
     console.log("検索ワード:", searchWord);
+    //履歴を選択したとき
+    if(currentView === "history"){
+      console.log("履歴:",JSON.parse(localStorage.getItem("history")))
+    }
   }, [currentView, sort, searchWord]);
 
   const ViewTabs =

@@ -1,6 +1,5 @@
 "use client";
 import Button from "@/components/ui/Button";
-import EditButton from "./components/EditButton";
 import { Base } from "@/components/ui/Base";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
@@ -12,11 +11,12 @@ import {
   mainText,
   code,
   minTitle,
-} from "@/app/blogs/[id]/editor/lib/editUtils";
+} from "@/app/blogs/editor/lib/editUtils";
 import { useEffect } from "react";
 import { useRef } from "react";
+import EditButton from "./components/EditButton";
 
-export default function Blogs() {
+export default function Editor() {
   // const router = useRouter();
   // function back() {
   //   console.log("clicked!");
