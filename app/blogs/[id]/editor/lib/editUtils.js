@@ -3,12 +3,12 @@ const ZERO_WIDTH_SPACE = "\u200B";
 
 //使いたいプロパティを配列に格納
 const styleArray = ["font-size", "font-weight", "color"];
-const styleText = {
-  code: "min-height:24px;background-color:#4b5563;border-radius:12px;color:white;padding:8px;margin-block:8px;",
-  minTitle:
-    "font-weight:700;font-size:24px;line-height:32px;border-bottom:1px solid;padding-bottom:4px;margin-block:8px;",
-  mainText: "font-weight: normal;font-size: 16px",
-};
+// const styleText = {
+//   code: "min-height:24px;background-color:#4b5563;border-radius:12px;color:white;padding:8px;margin-block:8px;",
+//   minTitle:
+//     "font-weight:700;font-size:24px;line-height:32px;border-bottom:1px solid;padding-bottom:4px;margin-block:8px;",
+//   mainText: "font-weight: normal;font-size: 16px",
+// };
 
 //selectionとrangeを取得。選択範囲がbody外ならisOKをfalseに
 function getSelectionAndRange() {
@@ -64,11 +64,11 @@ function wrapSelection(p) {
   //div内にいるのか、divを囲んでいるのか、始点又は終点がdiv内にあるかを判断し、適切な処理を行う
   switch (getDivSelectionRelation(selection)) {
     case "outside": {
-      wrap(range,selection,p);
+      wrap(range,selection,"span",p);
       break;
     }
     case "inside": {
-      wrap(range,selection,p);
+      wrap(range,selection,"span",p);
       break;
     }
     case "enclosed": {
@@ -82,7 +82,7 @@ function wrapSelection(p) {
         const divRange = document.createRange();
         divRange.selectNodeContents(div);
         // ラップ
-        wrap(divRange,selection,p);
+        wrap(divRange,selection,"span",p);
       });
       range.insertNode(content);
 
@@ -90,12 +90,12 @@ function wrapSelection(p) {
       const firstRange = document.createRange();
       firstRange.setStart(range.startContainer, range.startOffset);
       firstRange.setEndBefore(divArray[0]);
-      wrap(firstRange,selection,p);
+      wrap(firstRange,selection,"span",p);
 
       const endRange = document.createRange();
       endRange.setStartAfter(divArray[divArray.length - 1]);
       endRange.setEnd(range.endContainer, range.endOffset);
-      wrap(endRange,selection,p);
+      wrap(endRange,selection,"span",p);
     }
   }
   cleanUp("span");
@@ -117,7 +117,7 @@ function mainText() {
   //div内にいるのか、divを囲んでいるのか、始点又は終点がdiv内にあるかを判断し、適切な処理を行う
   switch (getDivSelectionRelation(selection)) {
     case "outside": {
-      wrap(range,selection,styleText.mainText);
+      wrap(range,selection,"span","bt");
       break;
     }
     case "inside": {
@@ -146,7 +146,7 @@ function mainText() {
       const newRange = document.createRange();
       newRange.setStartBefore(first);
       newRange.setEndAfter(last);
-      wrap(newRange,selection,styleText.mainText);
+      wrap(newRange,selection,"span","bt");
 
       cleanZwspTag("div");
       break;
@@ -165,7 +165,7 @@ function mainText() {
         div.replaceWith(...div.childNodes);
       });
       range.insertNode(content);
-      wrap(range,selection,styleText.mainText);
+      wrap(range,selection,"span","bt");
       cleanZwspTag("div");
       break;
     }
@@ -175,23 +175,22 @@ function mainText() {
 
 //小見出し挿入用
 function minTitle() {
-  wrapDiv(styleText.minTitle, "mt", "小見出し");
+  wrapDiv("mt", "小見出し");
 }
 
 //コード用の黒いエリアを出す
 function code() {
-  wrapDiv(styleText.code, "cd", "//ここにコードを入力");
+  wrapDiv("cd", "//ここにコードを入力");
 }
 
 //<div>に加工用※未完成
-function wrapDiv(cssText, className, childText) {
+function wrapDiv(className, childText) {
   const { isOk, selection, range } = getSelectionAndRange();
   if (!isOk) return;
   console.log(getDivSelectionRelation(selection));
 
   //挿入するエレメントを宣言
   const div = document.createElement("div");
-  div.style.cssText = cssText;
   div.className = className;
 
   switch (getDivSelectionRelation(selection)) {
@@ -291,7 +290,7 @@ function wrapDiv(cssText, className, childText) {
           div.replaceWith(...div.childNodes);
         });
         range.insertNode(content);
-        wrap(range,selection,cssText, "div", className);
+        wrap(range,selection, "div", className);
         //無駄spanが残ってると不具合が出るので
       }
       cleanZwspTag("div");
@@ -301,11 +300,9 @@ function wrapDiv(cssText, className, childText) {
 }
 
 //rangeをspanに置き換え
-function wrap(range, selection, p, element = "span", className = null) {
+function wrap(range, selection, element = "span", className = null) {
   //空のタグを生成
   const draftSpan = document.createElement(element);
-
-  draftSpan.style.cssText = p;
 
   const newSpan = document.createElement(element);
 

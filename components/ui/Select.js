@@ -1,7 +1,7 @@
 import { textSize } from "@/lib/textStyle";
 import { cn } from "@/lib/utils";
 
-export default function Select({ children }) {
+export default function Select({ children, ...props }) {
   return (
     <select
       className={cn(
@@ -17,6 +17,7 @@ export default function Select({ children }) {
         textSize.sm,
         "text-white",
       )}
+      {...props}
     >
       {children}
     </select>

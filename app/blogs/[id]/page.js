@@ -8,6 +8,8 @@ import { textSize } from "@/lib/textStyle";
 import CommentMenu from "../components/CommentMenu";
 
 export default function blogs() {
+  ////ページのデータを取得する
+  // const pageData = fetch()
   return (
     <>
       <Base>

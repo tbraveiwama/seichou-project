@@ -5,8 +5,7 @@ import TitleCard from "./TitleCard";
 import { useState } from "react";
 
 //受け取ったオブジェクトの配列をTitleCardに加工して、ページネーションして返す
-export default function BlogLinkList() {
-  console.log("render");
+export default function BlogLinkList({pageList}) {
   const [pageNum, setPageNum] = useState(1);
   //表示件数
   const perPage = 10;

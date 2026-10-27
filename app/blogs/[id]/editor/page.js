@@ -13,6 +13,8 @@ import {
   code,
   minTitle,
 } from "@/app/blogs/[id]/editor/lib/editUtils";
+import { useEffect } from "react";
+import { useRef } from "react";
 
 export default function Blogs() {
   // const router = useRouter();
@@ -34,6 +36,22 @@ export default function Blogs() {
   //     }
   //   });
   // }
+
+  const titleRef = useRef(null);
+  const bodyRef = useRef(null);
+
+  useEffect(() => {
+    //ページIDがあればAPIを叩きデータ取得
+
+    //なければ初期文字列を表示
+    titleRef.current.innerHTML = "ここにタイトルを入力";
+    bodyRef.current.innerHTML = "ここにテキストを入力";
+  }, []);
+
+  function register() {}
+
+  function deletePage() {}
+
   return (
     <>
       <Script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></Script>
@@ -53,18 +71,16 @@ export default function Blogs() {
             contentEditable="true"
             onKeyDown={keyController}
             onPaste={handlePaste}
-          >
-            ここにタイトルを入力
-          </div>
+            ref={titleRef}
+          ></div>
           <div
             className="px-8 text-base"
             id="body"
             contentEditable="true"
             onKeyDown={keyController}
             onPaste={handlePaste}
-          >
-            ここにテキストを入力
-          </div>
+            ref={bodyRef}
+          ></div>
         </Card>
         <div className="flex justify-end gap-2">
           <Button backGroundColor={"red"} textColor={"white"}>
