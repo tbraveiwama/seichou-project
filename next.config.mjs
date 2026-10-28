@@ -1,7 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   /* config options here */
-  allowedDevOrigins: ['Rensyu2.local'],
+  output: "export",
+  allowedDevOrigins: ["Rensyu2.local"],
+  images: {
+    unoptimized: true,
+  },
   webpack: (config, { isServer }) => {
     config.watchOptions = {
       poll: 800,

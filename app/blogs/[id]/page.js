@@ -14,18 +14,16 @@ export default async function BlogPages({ params }) {
   // const pageData = fetch()
   return (
     <>
-    <HistoryManager pageId={id}/>
+      <HistoryManager pageId={id} />
       <Base>
         <Card className="font-bold text-2xl text-center">
           <div className="text-gray-400">作成日:2026/10/7 更新:2026/10/8</div>
           <div className={cn("font-bold", textSize.lg, "text-center")}>
-           title
+            title
           </div>
           <div className="text-gray-400 flex justify-end">閲覧数:12</div>
           <div className="flex flex-col gap-2 px-2 lg:px-8">
-            <div>
-              bodytext
-            </div>
+            <div>bodytext</div>
           </div>
         </Card>
         <div className="flex justify-end gap-2 py-2">
@@ -46,4 +44,12 @@ export default async function BlogPages({ params }) {
       </Base>
     </>
   );
+}
+
+export async function generateStaticParams() {
+  const paths = [];
+  for (let i = 1;  i <= 55;i++) {
+    paths.push({id: String(i)});
+  }
+  return paths;
 }
