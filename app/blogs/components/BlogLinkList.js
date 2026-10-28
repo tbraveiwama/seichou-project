@@ -11,19 +11,19 @@ export default function BlogLinkList({pageList}) {
   const perPage = 10;
   //ページ数
   let maxPage;
-  if (exam.length % perPage === 0) {
-    maxPage = Math.trunc(exam.length / perPage);
+  if (pageList.length % perPage === 0) {
+    maxPage = Math.trunc(pageList.length / perPage);
   } else {
-    maxPage = Math.trunc(exam.length / perPage) + 1;
+    maxPage = Math.trunc(pageList.length / perPage) + 1;
   }
 
   //加工
-  const cardList = exam.map((e, index) => {
+  const cardList = pageList.map((e, index) => {
     //表示対象に該当するオブジェクトのみ格納
     if (index < pageNum * perPage && index >= (pageNum - 1) * perPage) {
       return (
-        <Link href={`/blogs/${e.id}`} key={index}>
-          <TitleCard date={e.date} title={e.title} views={e.views}></TitleCard>
+        <Link href={`/blogs/${e.page_id}`} key={index}>
+          <TitleCard date={e.created} title={e.title} views={e.views}></TitleCard>
         </Link>
       );
     } else {

@@ -3,27 +3,28 @@ import { Base } from "@/components/ui/Base";
 import SearchMenu from "./components/SearchMenu";
 import BlogLinkList from "./components/BlogLinkList";
 import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function Blogs() {
   const [currentView, setCurrentView] = useState("articles");
-  const [pageList, setPageList] = useState();
+  const [pageList, setPageList] = useState([]);
   //並べ替え・検索ワードを親が持ち、子にセッターを渡す
   const [sort, setSort] = useState("date");
   const [searchWord, setSearchWord] = useState("");
 
   useEffect(() => {
-    // const fetchPageList = async () => {
-    //   //supabaseでの取得・並べ替え・検索処理
+    const fetchPageList = async () => {
+      //supabaseでの取得・並べ替え・検索処理
+      const { data, error } = await supabase.from("pages").select("*");
+      setPageList(data);
+    };
 
-    //   setPageList(data);
-    // };
-
-    // fetchPageList();
+    fetchPageList();
     console.log("並び順:", sort);
     console.log("検索ワード:", searchWord);
     //履歴を選択したとき
-    if(currentView === "history"){
-      console.log("履歴:",JSON.parse(localStorage.getItem("history")))
+    if (currentView === "history") {
+      console.log("履歴:", JSON.parse(localStorage.getItem("history")));
     }
   }, [currentView, sort, searchWord]);
 

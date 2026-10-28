@@ -15,6 +15,8 @@ import {
 import { useEffect } from "react";
 import { useRef } from "react";
 import EditButton from "./components/EditButton";
+import { supabase } from "@/lib/supabase";
+import { useSearchParams } from "next/navigation";
 
 export default function Editor() {
   // const router = useRouter();
@@ -36,16 +38,29 @@ export default function Editor() {
   //     }
   //   });
   // }
+  const params = useSearchParams();
+  const pageId = Number(params.get("id"));
 
   const titleRef = useRef(null);
   const bodyRef = useRef(null);
 
   useEffect(() => {
     //ページIDがあればAPIを叩きデータ取得
-
-    //なければ初期文字列を表示
-    titleRef.current.innerHTML = "ここにタイトルを入力";
-    bodyRef.current.innerHTML = "ここにテキストを入力";
+    const fetchPage = async () => {
+      const { data, error } = await supabase
+        .from("pages")
+        .select()
+        .eq("page_id", pageId);
+      titleRef.current.innerHTML = data[0].title;
+      bodyRef.current.innerHTML = data[0].body_text
+    };
+    if (pageId) {
+      fetchPage();
+    } else {
+      //なければ初期文字列を表示
+      titleRef.current.innerHTML = "ここにタイトルを入力";
+      bodyRef.current.innerHTML = "ここにテキストを入力";
+    }
   }, []);
 
   function register() {}
