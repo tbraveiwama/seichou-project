@@ -2,6 +2,7 @@
 const nextConfig = {
   /* config options here */
   output: "export",
+  basePath: "/seichou-project",
   allowedDevOrigins: ["Rensyu2.local"],
   images: {
     unoptimized: true,
