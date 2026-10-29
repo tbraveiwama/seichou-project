@@ -1,8 +1,12 @@
 /** @type {import('next').NextConfig} */
+
+//環境変数
+const basePath = process.env.BASE_PATH || "";
+
 const nextConfig = {
   /* config options here */
   output: "export",
-  basePath: "/seichou-project",
+  basePath: basePath,
   allowedDevOrigins: ["Rensyu2.local"],
   images: {
     unoptimized: true,

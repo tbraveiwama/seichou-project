@@ -7,7 +7,8 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "deploy": "gh-pages -d out --dotfiles"
+    "deploy": "BASE_PATH=/seichou-project npm run build && gh-pages -d out --dotfiles",
+    "preview": "npm run build && serve out"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",
@@ -25,6 +26,7 @@
     "eslint-config-next": "16.3.5",
     "gh-pages": "^6.3.0",
     "postcss": "^8.5.28",
+    "serve": "^14.2.6",
     "tailwindcss": "^4.3.3"
   }
 }

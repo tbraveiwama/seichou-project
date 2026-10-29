@@ -1,6 +1,9 @@
+"use client"
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
+import { useEffect } from "react";
 
-export default function index() {
+export default function Index() {
   return (
     <div>
       <Link href="/blogs">ブログ</Link>
