@@ -1,8 +1,8 @@
 "use client";
-import exam from "@/components/Test";
 import Link from "next/link";
 import TitleCard from "./TitleCard";
 import { useState } from "react";
+import { ToDate } from "@/lib/utils";
 
 //受け取ったオブジェクトの配列をTitleCardに加工して、ページネーションして返す
 export default function BlogLinkList({pageList}) {
@@ -19,11 +19,13 @@ export default function BlogLinkList({pageList}) {
 
   //加工
   const cardList = pageList.map((e, index) => {
+    //TimeStampを年月日に加工
+    const created = ToDate(e.created);
     //表示対象に該当するオブジェクトのみ格納
     if (index < pageNum * perPage && index >= (pageNum - 1) * perPage) {
       return (
         <Link href={`/blogs/${e.page_id}`} key={index}>
-          <TitleCard date={e.created} title={e.title} views={e.views}></TitleCard>
+          <TitleCard date={created} title={e.title} views={e.views}></TitleCard>
         </Link>
       );
     } else {

@@ -2,7 +2,7 @@ import { Base } from "@/components/ui/Base";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn, ToDate } from "@/lib/utils";
 import { textSize } from "@/lib/textStyle";
 import CommentMenu from "../components/CommentMenu";
 import HistoryManager from "../components/HistoryManager";
@@ -17,9 +17,11 @@ export default async function BlogPages({ params }) {
   //supabaseでの取得
   const { data, error } = await supabase
     .from("pages")
-    .select()
+    .select("*")
     .eq("page_id", id);
   const pageData = data[0];
+  const created = ToDate(pageData.created)
+  const updated = ToDate(pageData.updated)
 
   return (
     <>
@@ -27,7 +29,7 @@ export default async function BlogPages({ params }) {
       <Base>
         <Card className="font-bold text-2xl text-center">
           <div className="text-gray-400">
-            作成日:{pageData.created} 更新:{pageData.updated}
+            作成日:{created} 更新:{updated}
           </div>
           <div className={cn("font-bold", textSize.lg, "text-center")}>
             {pageData.title}

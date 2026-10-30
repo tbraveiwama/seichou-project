@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useViews } from "@/app/hooks/useViews";
 
 //webStorageに履歴を記憶させるためのコンポーネント
 //閲覧数登録もする

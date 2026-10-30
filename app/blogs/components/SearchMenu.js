@@ -5,7 +5,13 @@ import { TitleText } from "@/components/ui/text/TitleText";
 import Link from "next/link";
 import { useRef } from "react";
 
-export default function SearchMenu({ sort, setSort, setSearchWord, isLogin }) {
+export default function SearchMenu({
+  sort,
+  setSort,
+  setSearchWord,
+  isLogin,
+  currentView,
+}) {
   //ここでしか使わない、検索バーに入力された文字を取り出すためのref
   const inputRef = useRef(null);
   return (
@@ -30,7 +36,10 @@ export default function SearchMenu({ sort, setSort, setSearchWord, isLogin }) {
           検索
         </Button>
         <Select value={sort} onChange={(e) => setSort(e.target.value)}>
-          <option value="date">作成日時 ▼</option>
+          {currentView === "history" && (
+            <option value="viewed">閲覧日時 ▼</option>
+          )}
+          <option value="created">作成日時 ▼</option>
           <option value="views">閲覧数 ▼</option>
         </Select>
         {isLogin && (
