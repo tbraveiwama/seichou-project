@@ -1,11 +1,11 @@
-"use client"
+"use client";
 import Button from "@/components/ui/Button";
 import Select from "@/components/ui/Select";
 import { TitleText } from "@/components/ui/text/TitleText";
 import Link from "next/link";
 import { useRef } from "react";
 
-export default function SearchMenu({ sort, setSort, setSearchWord }) {
+export default function SearchMenu({ sort, setSort, setSearchWord, isLogin }) {
   //ここでしか使わない、検索バーに入力された文字を取り出すためのref
   const inputRef = useRef(null);
   return (
@@ -33,11 +33,13 @@ export default function SearchMenu({ sort, setSort, setSearchWord }) {
           <option value="date">作成日時 ▼</option>
           <option value="views">閲覧数 ▼</option>
         </Select>
-        <Link href="/blogs/editor" className="hidden lg:inline">
-          <Button backGroundColor="orange" textColor="white">
-            新規作成
-          </Button>
-        </Link>
+        {isLogin && (
+          <Link href="/blogs/editor" className="hidden lg:inline">
+            <Button backGroundColor="orange" textColor="white">
+              新規作成
+            </Button>
+          </Link>
+        )}
       </div>
     </div>
   );

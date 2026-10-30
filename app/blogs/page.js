@@ -4,6 +4,8 @@ import SearchMenu from "./components/SearchMenu";
 import BlogLinkList from "./components/BlogLinkList";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { useUser } from "../hooks/useUser";
+import BlogLinkListLoading from "./components/BlogLinkListLoading";
 
 export default function Blogs() {
   const [currentView, setCurrentView] = useState("articles");
@@ -11,14 +13,16 @@ export default function Blogs() {
   //並べ替え・検索ワードを親が持ち、子にセッターを渡す
   const [sort, setSort] = useState("date");
   const [searchWord, setSearchWord] = useState("");
+  //ロード画面
+  const [isLoading, setIsLoading] = useState(true);
 
+  //supabaseでの取得・並べ替え・検索処理
   useEffect(() => {
     const fetchPageList = async () => {
-      //supabaseでの取得・並べ替え・検索処理
       const { data, error } = await supabase.from("pages").select("*");
       setPageList(data);
+      setIsLoading(false);
     };
-
     fetchPageList();
     console.log("並び順:", sort);
     console.log("検索ワード:", searchWord);
@@ -27,6 +31,8 @@ export default function Blogs() {
       console.log("履歴:", JSON.parse(localStorage.getItem("history")));
     }
   }, [currentView, sort, searchWord]);
+
+  const isLogin = useUser();
 
   const ViewTabs =
     currentView === "articles" ? (
@@ -62,11 +68,15 @@ export default function Blogs() {
           sort={sort}
           setSort={setSort}
           setSearchWord={setSearchWord}
+          isLogin={isLogin}
         />
         <div>
           <div className="pl-4 flex gap-1 relative z-0">{ViewTabs}</div>
-          {/* pageListを渡す */}
-          <BlogLinkList pageList={pageList}></BlogLinkList>
+          {isLoading ? (
+            <BlogLinkListLoading />
+          ) : (
+            <BlogLinkList pageList={pageList} />
+          )}
         </div>
       </Base>
     </>

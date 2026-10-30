@@ -1,13 +1,13 @@
 import logo from "@/public/siteLogo.png"
 import { textSize } from "@/lib/textStyle";
 import Image from "next/image";
-import { ErrorMessage } from "../ui/text/ErrorMessage";
+import LoginCheck from "./LoginCheck";
 
 export default function Header() {
   return (
     <header className="relative flex flex-col gap-2 bg-sky-300">
       <div className="flex justify-end pt-1 pr-1">
-        <ErrorMessage>管理者としてログイン中</ErrorMessage>
+        <LoginCheck/>
       </div>
       <div className="relative flex flex-col items-center pb-2">
         <div className="flex items-center gap-2 lg:gap-9">

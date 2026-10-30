@@ -5,6 +5,7 @@ export default function Button({
   textColor,
   onClick,
   children,
+  ...props
 }) {
   const bgClasses = {
     orange: "bg-orange-400",
@@ -28,6 +29,7 @@ export default function Button({
       type="button"
       onClick={onClick}
       className={`${bgClasses[backGroundColor]} rounded-full shadow-md ${textClasses[textColor]} cursor-pointer ${hoverClasses[backGroundColor]} shrink-0 h-8 lg:h-10 w-20 ${textSize.lg} lg:w-30`}
+      {...props}
     >
       {children}
     </button>
