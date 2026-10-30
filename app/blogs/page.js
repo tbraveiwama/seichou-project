@@ -18,67 +18,60 @@ export default function Blogs() {
 
   //supabaseでの取得・並べ替え・検索処理
   useEffect(() => {
+    //検索ボックス内の言葉を配列化
+    //[/\s+]は、一つ以上の空白を全角・半角問わずまとめて一つの空白として扱う
+    const searchWordArray = searchWord.split(/\s+/).filter(Boolean);
+    let query = supabase.from("pages").select("page_id,title,created,views");
+    //searchWordがあるとき
+    if (searchWord !== "") {
+      searchWordArray.forEach((word) => {
+        query = query.ilike("title", `%${word}%`);
+      });
+    }
+
     const fetchPageList = async () => {
       //ロード画面
       setIsLoading(true);
-      //searchWordがあるとき
-      if (searchWord !== "") {
-        //検索ボックス内の言葉を配列化
-        //[/\s+]は、一つ以上の空白を全角・半角問わずまとめて一つの空白として扱う
-        const searchWordArray = searchWord.split(/\s+/);
-
-        let query = supabase
-          .from("pages")
-          .select("page_id,title,created,views")
-          .order(sort, { ascending: false });
-        searchWordArray.forEach((word) => {
-          query = query.ilike("title", `%${word}%`);
-        });
-
-        const { data, error } = await query;
-        //state更新
-        setPageList(data);
-        //ロード画面終了
-        setIsLoading(false);
-      } else {
-        //データ取得
-        const { data, error } = await supabase
-          .from("pages")
-          .select("page_id,title,created,views")
-          .order(sort, { ascending: false });
-        //state更新
-        setPageList(data);
-        //ロード画面終了
-        setIsLoading(false);
-      }
+      query = query.order(sort, { ascending: false });
+      //データ取得
+      const { data, error } = await query;
+      if (error) console.error(error);
+      //state更新
+      setPageList(data ?? []);
+      //ロード画面終了
+      setIsLoading(false);
     };
 
     const fetchHistoryList = async () => {
       setIsLoading(true);
-      const historyArray = JSON.parse(localStorage.getItem("history"));
+      const historyArray = JSON.parse(localStorage.getItem("history")) ?? [];
+      //履歴が空なら終了
+      if (historyArray.length === 0) {
+        setPageList([]);
+        setIsLoading(false);
+        return;
+      }
+
+      query = query.in("page_id", historyArray);
       if (sort === "viewed") {
-        const { data, error } = await supabase
-          .from("pages")
-          .select("page_id,title,created,views")
-          .in("page_id", historyArray);
+        const { data, error } = await query;
+        if (error) console.error(error);
         //supabaseが履歴順にソートしてくれないので
         const map = new Map(
-          data.map((row) => {
+          (data ?? []).map((row) => {
             return [String(row.page_id), row];
           }),
         );
-        const sorted = historyArray.map((id) => {
-          return map.get(String(id));
-        });
+        const sorted = historyArray
+          .map((id) => map.get(String(id)))
+          .filter(Boolean);
         setPageList(sorted);
         setIsLoading(false);
       } else {
-        const { data, error } = await supabase
-          .from("pages")
-          .select("page_id,title,created,views")
-          .in("page_id", historyArray)
-          .order(sort, { ascending: false });
-        setPageList(data);
+        query = query.order(sort, { ascending: false });
+        const { data, error } = await query;
+        if (error) console.error(error);
+        setPageList(data ?? []);
         setIsLoading(false);
       }
     };
@@ -89,13 +82,6 @@ export default function Blogs() {
         break;
       case "history":
         fetchHistoryList();
-    }
-
-    console.log("並び順:", sort);
-    console.log("検索ワード:", searchWord);
-    //履歴を選択したとき
-    if (currentView === "history") {
-      console.log("履歴:", JSON.parse(localStorage.getItem("history")));
     }
   }, [currentView, sort, searchWord]);
 
