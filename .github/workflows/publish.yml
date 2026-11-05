@@ -52,4 +52,4 @@ jobs:
       - name: Deploy To GitHub Pages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx gh-pages -d --dotfiles out -r https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+        run: npx gh-pages -d out --dotfiles -r https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
