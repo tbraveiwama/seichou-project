@@ -1,2 +1,2 @@
-:HL["/_next/static/css/a3957609840f09fc.css","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"blogs","param":null,"prefetchHints":4192,"slots":{"children":{"name":"id","param":{"type":"d","key":"16","siblings":["editor"]},"prefetchHints":4192,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}}}},"staleTime":300,"buildId":"KkQypFtOz-6wVX_yhVahm"}
+:HL["/seichou-project/_next/static/css/a3957609840f09fc.css","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"blogs","param":null,"prefetchHints":4192,"slots":{"children":{"name":"id","param":{"type":"d","key":"16","siblings":["editor"]},"prefetchHints":4192,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}}}},"staleTime":300,"buildId":"1V_D_blg2T-WyyLcJ33n_"}
