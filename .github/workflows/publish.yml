@@ -19,7 +19,7 @@ jobs:
 
       - name: Build File
         run: |
-          npm run build
+          BASE_PATH=/seichou-project npm run build
           touch out/.nojekyll
 
       - name: Upload
@@ -52,4 +52,4 @@ jobs:
       - name: Deploy To GitHub Pages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: BASE_PATH=/seichou-project npx gh-pages -d out --dotfiles -r https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+        run: npx gh-pages -d out --dotfiles -r https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
