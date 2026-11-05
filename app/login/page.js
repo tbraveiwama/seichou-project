@@ -19,7 +19,7 @@ export default function Blogs() {
   async function login() {
     const email = nameRef.current.value + "@seichou.project.local";
     const pass = passRef.current.value;
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email: email,
       password: pass,
     });
@@ -77,7 +77,7 @@ export default function Blogs() {
               ></input>
             </div>
           </div>
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
             <Button
               backGroundColor={"orange"}
               textColor={"white"}
@@ -85,11 +85,13 @@ export default function Blogs() {
             >
               ログイン
             </Button>
-            <button
+            <Button
+            backGroundColor={"red"}
+            textColor={"white"}
               onClick={logout}
             >
-              ログアウト（開発用）
-            </button>
+              ログアウト
+            </Button>
           </div>
         </div>
       </div>

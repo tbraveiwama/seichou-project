@@ -3,12 +3,12 @@ import { cn } from "@/lib/utils";
 
 export default function BlogLinkListLoading() {
   const card = [];
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 4; i++) {
     card.push(
       <span key={i}>
         <div
           className={cn(
-            "p-2 bg-white rounded-xl min-h-30 flex items-center hover:bg-gray-300 w-full animate-pulse",
+            "p-2 bg-white rounded-xl min-h-30 flex items-center hover:bg-gray-300 w-full animate-pulse cursor-wait",
             textSize.xs,
           )}
           

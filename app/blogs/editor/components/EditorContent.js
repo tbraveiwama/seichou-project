@@ -3,7 +3,7 @@ import Button from "@/components/ui/Button";
 import { Base } from "@/components/ui/Base";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import Swal from "sweetalert2";
 import Card from "@/components/ui/Card";
 import {
   keyController,
@@ -19,25 +19,8 @@ import { supabase } from "@/lib/supabase";
 import { useSearchParams } from "next/navigation";
 
 export default function EditorContent() {
-  // const router = useRouter();
-  // function back() {
-  //   console.log("clicked!");
-  //   Swal.fire({
-  //     title: "保存せずに戻りますか？",
-  //     showDenyButton: true,
-  //     confirmButtonText: "はい",
-  //     denyButtonText: "いいえ",
-  //     customClass: {
-  //       actions: "my-actions",
-  //       cancelButton: "order-1 right-gap",
-  //       denyButton: "order-2",
-  //     },
-  //   }).then((result) => {
-  //     if (result.isConfirmed) {
-  //       router.push("/blogs/1");
-  //     }
-  //   });
-  // }
+  const router = useRouter();
+
   const params = useSearchParams();
   const pageId = Number(params.get("id"));
 
@@ -63,25 +46,100 @@ export default function EditorContent() {
     }
   }, []);
 
+  function back() {
+    Swal.fire({
+      title: "保存せずに戻りますか？",
+      showDenyButton: true,
+      confirmButtonText: "はい",
+      denyButtonText: "いいえ",
+      customClass: {
+        actions: "my-actions",
+        cancelButton: "order-1 right-gap",
+        denyButton: "order-2",
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        if (pageId) {
+          router.push(`/blogs/${pageId}`);
+        } else {
+          router.push("/blogs");
+        }
+      }
+    });
+  }
+
   async function register() {
-    console.log("発火");
-    if (pageId) {
-      console.log("間違い");
-    } else {
+    const msg = pageId
+      ? "この内容で更新しますか？"
+      : "この内容で投稿しますか？";
+    const result = await Swal.fire({
+      title: msg,
+      showDenyButton: true,
+      confirmButtonText: "はい",
+      denyButtonText: "いいえ",
+      customClass: {
+        actions: "my-actions",
+        cancelButton: "order-1 right-gap",
+        denyButton: "order-2",
+      },
+    });
+    if (result.isConfirmed) {
+      //「はい」選択時の処理
       const title = titleRef.current.innerHTML;
       const body = bodyRef.current.innerHTML;
+      if (pageId) {
+        //update処理
+        const now = new Date();
+        const { error } = await supabase
+          .from("pages")
+          .update({ title: title, body_text: body, updated: now.toISOString() })
+          .eq("page_id", pageId)
+          .select();
+        if (error) {
+          console.log("APIエラー:", error);
+          return;
+        }
+        router.push(`/blogs/${pageId}`);
+      } else {
+        //insert処理
+        const { error } = await supabase
+          .from("pages")
+          .insert({ title: title, body_text: body });
+        if (error) {
+          console.log("APIエラー:", error);
+          return;
+        }
+        //gitHubActions起動
+
+        router.push("/blogs");
+      }
+    }
+  }
+
+  async function deletePage() {
+    const result = await Swal.fire({
+      title: "この記事を削除しますか？",
+      showDenyButton: true,
+      confirmButtonText: "はい",
+      denyButtonText: "いいえ",
+      customClass: {
+        actions: "my-actions",
+        cancelButton: "order-1 right-gap",
+        denyButton: "order-2",
+      },
+    });
+    if (result.isConfirmed) {
       const { data, error } = await supabase
         .from("pages")
-        .insert({ title: title, body_text: body });
+        .delete()
+        .eq("page_id", pageId);
       if (error) {
         console.log(error);
         return;
       }
-      console.log("成功");
+      router.push("/blogs");
     }
   }
-
-  function deletePage() {}
 
   return (
     <>
@@ -114,15 +172,24 @@ export default function EditorContent() {
           ></div>
         </Card>
         <div className="flex justify-end gap-2">
-          <Button backGroundColor={"red"} textColor={"white"}>
-            削除
+          <Button backGroundColor={"gray"} textColor={"white"} onClick={back}>
+            戻る
           </Button>
+          {!!pageId && (
+            <Button
+              backGroundColor={"red"}
+              textColor={"white"}
+              onClick={deletePage}
+            >
+              削除
+            </Button>
+          )}
           <Button
             backGroundColor={"orange"}
             textColor={"white"}
             onClick={register}
           >
-            投稿
+            {pageId ? "更新" : "投稿"}
           </Button>
         </div>
       </Base>

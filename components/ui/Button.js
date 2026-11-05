@@ -28,7 +28,7 @@ export default function Button({
     <button
       type="button"
       onClick={onClick}
-      className={`${bgClasses[backGroundColor]} rounded-full shadow-md ${textClasses[textColor]} cursor-pointer ${hoverClasses[backGroundColor]} shrink-0 h-8 lg:h-10 w-20 ${textSize.lg} lg:w-30`}
+      className={`${bgClasses[backGroundColor]} rounded-full shadow-md ${textClasses[textColor]} cursor-pointer ${hoverClasses[backGroundColor]} shrink-0 h-8 lg:h-10 w-20 ${textSize.base} font-bold lg:w-30`}
       {...props}
     >
       {children}

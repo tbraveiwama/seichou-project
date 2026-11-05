@@ -9,6 +9,7 @@ import HistoryManager from "../components/HistoryManager";
 import { supabase } from "@/lib/supabase";
 import EditorLink from "../components/EditorLink";
 import ViewCounter from "../components/ViewCounter";
+import { HTMLChanger } from "../components/HTMLChanger";
 
 export default async function BlogPages({ params }) {
   //パラメータからidを受け取る
@@ -20,8 +21,8 @@ export default async function BlogPages({ params }) {
     .select("*")
     .eq("page_id", id);
   const pageData = data[0];
-  const created = ToDate(pageData.created)
-  const updated = ToDate(pageData.updated)
+  const created = ToDate(pageData.created);
+  const updated = ToDate(pageData.updated);
 
   return (
     <>
@@ -32,7 +33,7 @@ export default async function BlogPages({ params }) {
             作成日:{created} 更新:{updated}
           </div>
           <div className={cn("font-bold", textSize.lg, "text-center")}>
-            {pageData.title}
+            <HTMLChanger text={pageData.title} />
           </div>
 
           <div className="text-gray-400 flex justify-end">
@@ -41,7 +42,7 @@ export default async function BlogPages({ params }) {
           </div>
 
           <div className="flex flex-col gap-2 px-2 lg:px-8">
-            {pageData.body_text}
+            <HTMLChanger text={pageData.body_text} />
           </div>
         </Card>
         <div className="flex justify-end gap-2 py-2">
