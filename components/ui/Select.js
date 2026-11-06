@@ -17,6 +17,8 @@ export default function Select({ children, ...props }) {
         textSize.sm,
         "font-bold",
         "text-white",
+        "cursor-pointer",
+        "hover:bg-gray-400",
       )}
       {...props}
     >

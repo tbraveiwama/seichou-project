@@ -27,13 +27,14 @@ export default function Button({
 
   // 非アクティブ時は gray / white に固定
   const bg = isActive ? backGroundColor : "gray";
+  const bgh = isActive ? backGroundColor : undefined;
   const text = isActive ? textColor : "white";
 
   return (
     <button
       type="button"
       onClick={isActive ? onClick : undefined}
-      className={`${bgClasses[bg]} ${hoverClasses[bg]} ${textClasses[text]} rounded-full shadow-md cursor-pointer shrink-0 h-8 lg:h-10 w-20 lg:w-30 ${textSize.base} font-bold`}
+      className={`${bgClasses[bg]} ${hoverClasses[bgh]} ${textClasses[text]} rounded-full shadow-md cursor-pointer shrink-0 h-8 lg:h-10 w-20 lg:w-30 ${textSize.base} font-bold`}
       {...props}
     >
       {children}

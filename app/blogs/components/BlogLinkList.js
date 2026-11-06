@@ -8,7 +8,7 @@ import { ToDate } from "@/lib/utils";
 export default function BlogLinkList({pageList}) {
   const [pageNum, setPageNum] = useState(1);
   //表示件数
-  const perPage = 10;
+  const perPage = 20;
   //ページ数
   let maxPage;
   if (pageList.length % perPage === 0) {
@@ -52,7 +52,7 @@ export default function BlogLinkList({pageList}) {
             {pageNum > 1 && (
               <button
                 type="button"
-                className="bg-gray-50 py-1 px-2 text-gray-500 border border-gray-500 text-lg shrink-0"
+                className="bg-gray-50 py-1 px-2 text-gray-500 border border-gray-500 text-lg shrink-0 cursor-pointer"
                 onClick={prevPage}
               >
                 ＜
@@ -64,7 +64,7 @@ export default function BlogLinkList({pageList}) {
             {pageNum < maxPage && (
               <button
                 type="button"
-                className="bg-gray-50 py-1 px-2 text-gray-500 border border-gray-500 text-lg shrink-0"
+                className="bg-gray-50 py-1 px-2 text-gray-500 border border-gray-500 text-lg shrink-0 cursor-pointer"
                 onClick={nextPage}
               >
                 ＞

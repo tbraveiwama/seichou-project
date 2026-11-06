@@ -11,7 +11,6 @@ export default function BlogLinkListLoading() {
             "p-2 bg-white rounded-xl min-h-30 flex items-center hover:bg-gray-300 w-full animate-pulse cursor-wait",
             textSize.xs,
           )}
-          
         >
           <div className="w-full">
             <div className="text-gray-200 pl-2 animate-pulse">■■■■-■■-■■■■</div>
@@ -36,7 +35,7 @@ export default function BlogLinkListLoading() {
           <div className="flex gap-2">
             <button
               type="button"
-              className="bg-gray-50 py-1 px-2 text-gray-200 border border-gray-500 text-lg shrink-0 animate-pulse"
+              className="bg-gray-50 py-1 px-2 text-gray-200 border border-gray-500 text-lg shrink-0 animate-pulse cursor-wait"
             >
               ＜
             </button>
@@ -45,7 +44,7 @@ export default function BlogLinkListLoading() {
             </span>
             <button
               type="button"
-              className="bg-gray-50 py-1 px-2 text-gray-200 border border-gray-500 text-lg shrink-0 animate-pulse"
+              className="bg-gray-50 py-1 px-2 text-gray-200 border border-gray-500 text-lg shrink-0 animate-pulse cursor-wait"
             >
               ＞
             </button>
