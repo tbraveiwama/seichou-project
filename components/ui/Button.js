@@ -5,6 +5,7 @@ export default function Button({
   textColor,
   onClick,
   children,
+  isActive = true,
   ...props
 }) {
   const bgClasses = {
@@ -24,11 +25,15 @@ export default function Button({
     black: "text-black",
   };
 
+  // 非アクティブ時は gray / white に固定
+  const bg = isActive ? backGroundColor : "gray";
+  const text = isActive ? textColor : "white";
+
   return (
     <button
       type="button"
-      onClick={onClick}
-      className={`${bgClasses[backGroundColor]} rounded-full shadow-md ${textClasses[textColor]} cursor-pointer ${hoverClasses[backGroundColor]} shrink-0 h-8 lg:h-10 w-20 ${textSize.base} font-bold lg:w-30`}
+      onClick={isActive ? onClick : undefined}
+      className={`${bgClasses[bg]} ${hoverClasses[bg]} ${textClasses[text]} rounded-full shadow-md cursor-pointer shrink-0 h-8 lg:h-10 w-20 lg:w-30 ${textSize.base} font-bold`}
       {...props}
     >
       {children}

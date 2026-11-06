@@ -1,7 +1,6 @@
 "use client";
 import Button from "@/components/ui/Button";
 import { Base } from "@/components/ui/Base";
-import Script from "next/script";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import Card from "@/components/ui/Card";
@@ -17,6 +16,7 @@ import { useRef } from "react";
 import EditButton from "@/app/blogs/editor/components/EditButton";
 import { supabase } from "@/lib/supabase";
 import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 export default function EditorContent() {
   const router = useRouter();
@@ -26,6 +26,9 @@ export default function EditorContent() {
 
   const titleRef = useRef(null);
   const bodyRef = useRef(null);
+
+  //非活性化制御用state
+  const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
     //ページIDがあればAPIを叩きデータ取得
@@ -85,6 +88,8 @@ export default function EditorContent() {
     });
     if (result.isConfirmed) {
       //「はい」選択時の処理
+      //非活性
+      setIsActive(false);
       const title = titleRef.current.innerHTML;
       const body = bodyRef.current.innerHTML;
       if (pageId) {
@@ -97,9 +102,9 @@ export default function EditorContent() {
           .select();
         if (error) {
           console.log("APIエラー:", error);
+          setIsActive(true);
           return;
         }
-        router.push(`/blogs/${pageId}`);
       } else {
         //insert処理
         const { error } = await supabase
@@ -107,20 +112,27 @@ export default function EditorContent() {
           .insert({ title: title, body_text: body });
         if (error) {
           console.log("APIエラー:", error);
+          setIsActive(true);
           return;
         }
       }
       // supabaseEdigeFunction->gitHubActions起動
       const { error } = await supabase.functions.invoke("trigger-deploy");
       if (error) {
+        //pageIdがついていないと同じ記事を二重投稿してしまうので、対策
+        await Swal.fire({
+          title: "デプロイ時にエラーが発生しました。",
+          icon: "error",
+        });
+        router.push("/blogs");
         console.log(error);
         return;
       }
-      router.push("/blogs");
-      Swal.fire({
+      await Swal.fire({
         title: "ページを保存しました。\n※反映まで時間がかかる場合があります。",
         icon: "success",
       });
+      router.push("/blogs");
     }
   }
 
@@ -149,27 +161,37 @@ export default function EditorContent() {
         },
       });
       if (resultConf.isConfirmed) {
+        //非活性
+        setIsActive(false);
         const { data, error } = await supabase
           .from("pages")
           .delete()
           .eq("page_id", pageId);
         if (error) {
           console.log(error);
+          setIsActive(true);
           return;
         }
-        router.push("/blogs");
-        Swal.fire({
+        // supabaseEdigeFunction->gitHubActions起動
+        const { error: deployError } =
+          await supabase.functions.invoke("trigger-deploy");
+        if (deployError) {
+          console.log(deployError);
+          setIsActive(true);
+          return;
+        }
+        await Swal.fire({
           title: "ページを削除しました。",
           icon: "success",
         });
+
+        router.push("/blogs");
       }
     }
   }
 
   return (
     <>
-      <Script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></Script>
-
       <div className="flex flex-col items-center sticky top-8 z-10 bg-gray-200">
         <div>
           <EditButton onClick={mainText}>本文</EditButton>
@@ -197,7 +219,12 @@ export default function EditorContent() {
           ></div>
         </Card>
         <div className="flex justify-end gap-2">
-          <Button backGroundColor={"gray"} textColor={"white"} onClick={back}>
+          <Button
+            backGroundColor={"gray"}
+            textColor={"white"}
+            onClick={back}
+            isActive={isActive}
+          >
             戻る
           </Button>
           {!!pageId && (
@@ -205,6 +232,7 @@ export default function EditorContent() {
               backGroundColor={"red"}
               textColor={"white"}
               onClick={deletePage}
+              isActive={isActive}
             >
               削除
             </Button>
@@ -213,6 +241,7 @@ export default function EditorContent() {
             backGroundColor={"orange"}
             textColor={"white"}
             onClick={register}
+            isActive={isActive}
           >
             {pageId ? "更新" : "投稿"}
           </Button>
