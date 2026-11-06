@@ -64,7 +64,7 @@ export default function Blogs() {
               </div>
               <input
                 type="text"
-                className="bg-gray-200 shadow-md w-full h-10 rounded-2xl px-2"
+                className="bg-gray-200 shadow-md w-full h-10 rounded-2xl px-4"
                 ref={nameRef}
               ></input>
             </div>
@@ -72,7 +72,7 @@ export default function Blogs() {
               <div className="text-lg">パスワード</div>
               <input
                 type="password"
-                className="bg-gray-200 shadow-md w-full h-10 rounded-2xl px-2"
+                className="bg-gray-200 shadow-md w-full h-10 rounded-2xl px-4"
                 ref={passRef}
               ></input>
             </div>

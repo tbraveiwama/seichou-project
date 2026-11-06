@@ -3,6 +3,7 @@ import { ErrorMessage } from "@/components/ui/text/ErrorMessage";
 import Button from "@/components/ui/Button";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import Swal from "sweetalert2";
 
 //特定のページのidを受け取って、コメントを表示するコンポーネント
 //URLからidを取得する機能はないので、propsで親から受け取る
@@ -13,6 +14,8 @@ export default function CommentMenu({ pageId }) {
     commentError: false,
   });
   const inputRef = useRef({});
+
+  const [isActive, setIsActive] = useState(true);
 
   //コメントを取得するための変数
   const fetchCommentList = async () => {
@@ -48,14 +51,20 @@ export default function CommentMenu({ pageId }) {
     // 投稿せずに終了
     if (nextError.nameError || nextError.commentError) return;
 
+    setIsActive(false);
     const { error } = await supabase
       .from("comments")
       .insert({ name: name, comment_text: comment, page_id: pageId });
     if (error) {
+      await Swal.fire({
+        title: "コメントの投稿に失敗しました。",
+        icon: "error",
+      });
+      setIsActive(true);
       console.log(error);
       return;
     }
-
+    setIsActive(true);
     inputRef.current.name.value = "";
     inputRef.current.comment.value = "";
     //再取得
@@ -106,6 +115,7 @@ export default function CommentMenu({ pageId }) {
                 backGroundColor={"sky"}
                 textColor={"white"}
                 onClick={postComment}
+                isActive={isActive}
               >
                 投稿
               </Button>
