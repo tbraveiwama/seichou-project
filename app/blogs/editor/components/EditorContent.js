@@ -110,13 +110,17 @@ export default function EditorContent() {
           return;
         }
       }
-      //supabaseEdigeFunction->gitHubActions起動
+      // supabaseEdigeFunction->gitHubActions起動
       const { error } = await supabase.functions.invoke("trigger-deploy");
       if (error) {
         console.log(error);
         return;
       }
       router.push("/blogs");
+      Swal.fire({
+        title: "ページを保存しました。\n※反映まで時間がかかる場合があります。",
+        icon: "success",
+      });
     }
   }
 
@@ -133,15 +137,32 @@ export default function EditorContent() {
       },
     });
     if (result.isConfirmed) {
-      const { data, error } = await supabase
-        .from("pages")
-        .delete()
-        .eq("page_id", pageId);
-      if (error) {
-        console.log(error);
-        return;
+      const resultConf = await Swal.fire({
+        title: "本当に削除しますか？\n※削除された記事は復元できません。",
+        showDenyButton: true,
+        confirmButtonText: "はい",
+        denyButtonText: "いいえ",
+        customClass: {
+          actions: "my-actions",
+          cancelButton: "order-1 right-gap",
+          denyButton: "order-2",
+        },
+      });
+      if (resultConf.isConfirmed) {
+        const { data, error } = await supabase
+          .from("pages")
+          .delete()
+          .eq("page_id", pageId);
+        if (error) {
+          console.log(error);
+          return;
+        }
+        router.push("/blogs");
+        Swal.fire({
+          title: "ページを削除しました。",
+          icon: "success",
+        });
       }
-      router.push("/blogs");
     }
   }
 
