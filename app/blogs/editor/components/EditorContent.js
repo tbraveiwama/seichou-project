@@ -109,10 +109,14 @@ export default function EditorContent() {
           console.log("APIエラー:", error);
           return;
         }
-        //gitHubActions起動
-
-        router.push("/blogs");
       }
+      //supabaseEdigeFunction->gitHubActions起動
+      const { error } = await supabase.functions.invoke("trigger-deploy");
+      if (error) {
+        console.log(error);
+        return;
+      }
+      router.push("/blogs");
     }
   }
 

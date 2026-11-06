@@ -1,8 +1,6 @@
-name: Auto Deploy
+name: Deploy SSG
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
