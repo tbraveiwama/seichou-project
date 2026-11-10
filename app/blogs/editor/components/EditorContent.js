@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import Card from "@/components/ui/Card";
 import {
   keyController,
+  titleKeyController,
   handlePaste,
   mainText,
   code,
@@ -29,6 +30,16 @@ export default function EditorContent() {
 
   //非活性化制御用state
   const [isActive, setIsActive] = useState(true);
+
+  //エラーメッセージ出力用
+  async function errorMsg(title, txt) {
+    await Swal.fire({
+      title: title,
+      html: txt,
+      icon: "error",
+      confirmButtonText: "OK",
+    });
+  }
 
   useEffect(() => {
     //ページIDがあればAPIを叩きデータ取得
@@ -72,11 +83,9 @@ export default function EditorContent() {
   }
 
   async function register() {
-    const msg = pageId
-      ? "この内容で更新しますか？"
-      : "この内容で投稿しますか？";
+    const msg = pageId ? "更新" : "投稿";
     const result = await Swal.fire({
-      title: msg,
+      title: `この内容で${msg}しますか？`,
       showDenyButton: true,
       confirmButtonText: "はい",
       denyButtonText: "いいえ",
@@ -92,6 +101,13 @@ export default function EditorContent() {
       setIsActive(false);
       const title = titleRef.current.innerHTML;
       const body = bodyRef.current.innerHTML;
+      //title未入力の場合返す
+      console.log(title.trim())
+      if(title.trim() === "<br>" || title.trim() === ""){
+        await errorMsg("エラー","タイトルが入力されていません");
+        setIsActive(true);
+        return;
+      }
       if (pageId) {
         //update処理
         const now = new Date();
@@ -102,6 +118,7 @@ export default function EditorContent() {
           .select();
         if (error) {
           console.log("APIエラー:", error);
+          await errorMsg("APIエラーが発生しました");
           setIsActive(true);
           return;
         }
@@ -112,6 +129,7 @@ export default function EditorContent() {
           .insert({ title: title, body_text: body });
         if (error) {
           console.log("APIエラー:", error);
+          await errorMsg("APIエラーが発生しました");
           setIsActive(true);
           return;
         }
@@ -119,18 +137,17 @@ export default function EditorContent() {
       // supabaseEdigeFunction->gitHubActions起動
       const { error } = await supabase.functions.invoke("trigger-deploy");
       if (error) {
+        console.log("デプロイエラー:", error);
         //pageIdがついていないと同じ記事を二重投稿してしまうので、対策
-        await Swal.fire({
-          title: "デプロイ時にエラーが発生しました。",
-          icon: "error",
-        });
+        await errorMsg("デプロイ時にエラーが発生しました");
         router.push("/blogs");
-        console.log(error);
         return;
       }
       await Swal.fire({
-        title: "ページを保存しました。\n※反映まで時間がかかる場合があります。",
+        title: `${msg}完了`,
+        html: `記事を${msg}しました<br>※反映まで時間がかかる場合があります`,
         icon: "success",
+        confirmButtonText: "OK",
       });
       router.push("/blogs");
     }
@@ -150,7 +167,8 @@ export default function EditorContent() {
     });
     if (result.isConfirmed) {
       const resultConf = await Swal.fire({
-        title: "本当に削除しますか？\n※削除された記事は復元できません。",
+        title: "本当に削除しますか？",
+        html: "※削除された記事は復元できません",
         showDenyButton: true,
         confirmButtonText: "はい",
         denyButtonText: "いいえ",
@@ -163,12 +181,13 @@ export default function EditorContent() {
       if (resultConf.isConfirmed) {
         //非活性
         setIsActive(false);
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from("pages")
           .delete()
           .eq("page_id", pageId);
         if (error) {
-          console.log(error);
+          console.log("APIエラー:", error);
+          await errorMsg("APIエラーが発生しました");
           setIsActive(true);
           return;
         }
@@ -176,12 +195,17 @@ export default function EditorContent() {
         const { error: deployError } =
           await supabase.functions.invoke("trigger-deploy");
         if (deployError) {
-          console.log(deployError);
-          setIsActive(true);
+          console.log("デプロイエラー:", deployError);
+          await errorMsg(
+            "デプロイ時にエラーが発生しました",
+            "記事は削除されましたが、サイトへの反映に失敗しました",
+          );
+          router.push("/blogs");
           return;
         }
         await Swal.fire({
-          title: "ページを削除しました。",
+          title: "削除しました",
+          confirmButtonText: "OK",
           icon: "success",
         });
 
@@ -205,7 +229,7 @@ export default function EditorContent() {
             className="font-bold text-2xl text-center text-gray-300 pb-5"
             id="title"
             contentEditable="true"
-            onKeyDown={keyController}
+            onKeyDown={titleKeyController}
             onPaste={handlePaste}
             ref={titleRef}
           ></div>
@@ -243,7 +267,7 @@ export default function EditorContent() {
             onClick={register}
             isActive={isActive}
           >
-            {pageId ? "更新" : "投稿"}
+            {!!pageId ? "更新" : "投稿"}
           </Button>
         </div>
       </Base>

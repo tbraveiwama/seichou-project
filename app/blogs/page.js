@@ -8,16 +8,46 @@ import { useUser } from "../hooks/useUser";
 import BlogLinkListLoading from "./components/BlogLinkListLoading";
 
 export default function Blogs() {
-  const [currentView, setCurrentView] = useState("articles");
+  const [currentView, setCurrentView] = useState(() => {
+    return sessionStorage.getItem("currentViewSession") ?? "articles";
+  });
   const [pageList, setPageList] = useState([]);
   //並べ替え・検索ワードを親が持ち、子にセッターを渡す
-  const [sort, setSort] = useState("created");
-  const [searchWord, setSearchWord] = useState("");
+  const [sort, setSort] = useState(() => {
+    return sessionStorage.getItem("sortSession") ?? "created";
+  });
+  const [searchWord, setSearchWord] = useState(() => {
+    return sessionStorage.getItem("searchWordSession") ?? "";
+  });
   //ロード画面
   const [isLoading, setIsLoading] = useState(true);
+  // //2つのuseEffectが同時に走るのを防ぐため、待たせる
+  // const [isRestored, setIsRestored] = useState(false);
+  //子に渡す用のsessionStorageセッター
+  function sortSessionSetter(value) {
+    sessionStorage.setItem("sortSession", value);
+  }
+  function searchWordSessionSetter(value) {
+    sessionStorage.setItem("searchWordSession", value);
+  }
+
+  // //storageSessionがあれば、各stateにセットする
+  // useEffect(() => {
+  //   const currentViewSession = sessionStorage.getItem("currentViewSession");
+  //   const searchWordSession = sessionStorage.getItem("searchWordSession");
+  //   const sortSession = sessionStorage.getItem("sortSession");
+  //   const getSessions = async () => {
+  //     if (currentViewSession) setCurrentView(currentViewSession);
+  //     if (searchWordSession) setSearchWord(searchWordSession);
+  //     if (sortSession) setSort(sortSession);
+  //     setIsRestored(true); // 復元完了の合図
+  //   };
+  //   getSessions();
+  // }, []);
 
   //supabaseでの取得・並べ替え・検索処理
   useEffect(() => {
+    // if (!isRestored) return;
     //検索ボックス内の言葉を配列化
     //[/\s+]は、一つ以上の空白を全角・半角問わずまとめて一つの空白として扱う
     const searchWordArray = searchWord.split(/\s+/).filter(Boolean);
@@ -99,6 +129,9 @@ export default function Blogs() {
             //並び順を強制的に「閲覧日時」に
             setSort("viewed");
             setCurrentView("history");
+            //sessionStorageに入れる
+            sessionStorage.setItem("currentViewSession", "history");
+            sortSessionSetter("viewed");
           }}
         >
           履歴
@@ -112,8 +145,12 @@ export default function Blogs() {
             //並び順が「閲覧日時」のとき、「作成日時」に変える
             if (sort === "viewed") {
               setSort("created");
+              //sessionStorageに入れる
+              sortSessionSetter("created");
             }
             setCurrentView("articles");
+            //sessionStorageに入れる
+            sessionStorage.setItem("currentViewSession", "articles");
           }}
         >
           記事
@@ -130,9 +167,13 @@ export default function Blogs() {
         <SearchMenu
           sort={sort}
           setSort={setSort}
+          searchWord={searchWord}
           setSearchWord={setSearchWord}
           isLogin={isLogin}
           currentView={currentView}
+          sortSessionSetter={sortSessionSetter}
+          searchWordSessionSetter={searchWordSessionSetter}
+          // isRestored={isRestored}
         />
         <div>
           <div className="pl-4 flex gap-1 relative z-0">{ViewTabs}</div>

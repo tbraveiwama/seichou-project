@@ -623,6 +623,13 @@ function cleanZwsp(html) {
   return html.replaceAll(ZERO_WIDTH_SPACE, "");
 }
 
+//タイトルは改行禁止制御
+function titleKeyController(event){
+  if (event.key === "Enter") {
+    //イベントに対してブラウザが本来自動的に行うデフォルトの動作をキャンセルする
+    event.preventDefault();}
+}
+
 //キーボード制御
 function keyController(event) {
   //Enterキー押下時に処理
@@ -776,4 +783,4 @@ const handlePaste = (e) => {
   document.execCommand("insertText", false, text);
 };
 
-export { keyController, handlePaste, minTitle, code, mainText };
+export { keyController,titleKeyController,handlePaste, minTitle, code, mainText };

@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
 //webStorageに履歴を記憶させるためのコンポーネント
 //閲覧数登録もする
 export default function HistoryManager({ pageId }) {
-  const [views, setViews] = useState(null);
   useEffect(() => {
     try {
       const history = localStorage.getItem("history")
