@@ -2,13 +2,12 @@ import { Base } from "@/components/ui/Base";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Link from "next/link";
-import { cn, ToDate } from "@/lib/utils";
+import { cn, toDate } from "@/lib/utils";
 import { textSize } from "@/lib/textStyle";
 import CommentMenu from "../components/CommentMenu";
 import HistoryManager from "../components/HistoryManager";
 import { supabase } from "@/lib/supabase";
 import EditorLink from "../components/EditorLink";
-import ViewCounter from "../components/ViewCounter";
 import { HTMLChanger } from "../components/HTMLChanger";
 
 export default async function BlogPages({ params }) {
@@ -20,13 +19,15 @@ export default async function BlogPages({ params }) {
     .from("pages")
     .select("*")
     .eq("page_id", id);
+  if(error){
+    return <div>データを取得できませんでした</div>
+  }
   const pageData = data[0];
-  const created = ToDate(pageData.created);
-  const updated = ToDate(pageData.updated);
+  const created = toDate(pageData.created);
+  const updated = toDate(pageData.updated);
 
   return (
     <>
-      <HistoryManager pageId={id} />
       <Base>
         <Card className="font-bold text-2xl text-center">
           <div className="text-gray-400">
@@ -38,7 +39,7 @@ export default async function BlogPages({ params }) {
 
           <div className="text-gray-400 flex justify-end">
             閲覧数:
-            <ViewCounter id={id} />
+            <HistoryManager pageId={id} />
           </div>
 
           <div className="flex flex-col gap-2 px-2 lg:px-8">

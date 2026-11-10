@@ -7,11 +7,6 @@ import { textSize } from "@/lib/textStyle";
 import HeaderButton from "@/components/layout/HeaderButton";
 
 export default function RootLayout({ children }) {
-  // const pathName = usePathname();
-  // let backGroundColor = "bg-sky-100";
-  // if (/editor$/.test(pathName) || /login$/.test(pathName)) {
-  //   backGroundColor = "bg-gray-100";
-  // }
   const pathName = usePathname();
 
   const backGroundColor =

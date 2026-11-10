@@ -4,10 +4,13 @@ import Button from "@/components/ui/Button";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import Swal from "sweetalert2";
+import { toDate } from "@/lib/utils";
+import HoverMsg from "@/components/ui/HoverMsg";
+
 
 //特定のページのidを受け取って、コメントを表示するコンポーネント
 //URLからidを取得する機能はないので、propsで親から受け取る
-export default function CommentMenu({ pageId }) {
+export default function CommentMenu({ pageId, isEditor = false }) {
   const [commentList, setCommentList] = useState();
   const [hasError, setHasError] = useState({
     nameError: false,
@@ -22,7 +25,7 @@ export default function CommentMenu({ pageId }) {
     //supabaseでの取得処理
     const { data, error } = await supabase
       .from("comments")
-      .select("name,comment_text")
+      .select("comment_id,name,comment_text,posted")
       .eq("page_id", pageId)
       .order("posted", { ascending: true });
     if (error) {
@@ -37,6 +40,30 @@ export default function CommentMenu({ pageId }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCommentList();
   }, [pageId]);
+
+  const comments = commentList
+    ? commentList.map((comment, index) => {
+      const date = toDate(comment.posted);
+      console.log(date)
+        return (
+          <div key={index} className="flex items-center justify-between">
+            <HoverMsg msg={date}>
+            <span>
+              {comment.name}：{comment.comment_text}
+            </span>
+            </HoverMsg>
+            {isEditor && (
+              <button
+                className="text-white bg-red-500 text-sm px-1 py-0.5 h-6 w-10 rounded-lg whitespace-nowrap text-center shrink-0 hover:bg-red-700 cursor-pointer"
+                onClick={() => deleteComment(comment.comment_id)}
+              >
+                削除
+              </button>
+            )}
+          </div>
+        );
+      })
+    : null;
 
   //コメント投稿関数
   async function postComment() {
@@ -71,20 +98,26 @@ export default function CommentMenu({ pageId }) {
     fetchCommentList();
   }
 
+  //削除関数
+  async function deleteComment(commentId) {
+    setIsActive(false);
+    const { error } = await supabase
+      .from("comments")
+      .delete()
+      .eq("comment_id", commentId);
+    setIsActive(true);
+    if (error) {
+      console.log(error);
+      return;
+    }
+    fetchCommentList();
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div className="underline">コメント</div>
       {/* コメント表示ボックス */}
-      <div>
-        {commentList &&
-          commentList.map((comment, index) => {
-            return (
-              <div key={index}>
-                {comment.name}：{comment.comment_text}
-              </div>
-            );
-          })}
-      </div>
+      <div className="flex flex-col gap-2">{comments}</div>
       <div className="bg-gray-200 rounded-xl p-2 flex flex-col gap-2">
         <div className="flex flex-row items-center gap-2 lg:h-14">
           <div className="flex items-center whitespace-nowrap">

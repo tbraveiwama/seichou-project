@@ -18,6 +18,9 @@ import EditButton from "@/app/blogs/editor/components/EditButton";
 import { supabase } from "@/lib/supabase";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
+import CommentMenu from "../../components/CommentMenu";
+import { cn } from "@/lib/utils";
+import { textSize } from "@/lib/textStyle";
 
 export default function EditorContent() {
   const router = useRouter();
@@ -102,9 +105,9 @@ export default function EditorContent() {
       const title = titleRef.current.innerHTML;
       const body = bodyRef.current.innerHTML;
       //title未入力の場合返す
-      console.log(title.trim())
-      if(title.trim() === "<br>" || title.trim() === ""){
-        await errorMsg("エラー","タイトルが入力されていません");
+      console.log(title.trim());
+      if (title.trim() === "<br>" || title.trim() === "") {
+        await errorMsg("エラー", "タイトルが入力されていません");
         setIsActive(true);
         return;
       }
@@ -226,7 +229,10 @@ export default function EditorContent() {
       <Base>
         <Card>
           <div
-            className="font-bold text-2xl text-center text-gray-300 pb-5"
+            className={cn(
+              "font-bold text-center text-gray-300 pb-5",
+              textSize.lg,
+            )}
             id="title"
             contentEditable="true"
             onKeyDown={titleKeyController}
@@ -234,7 +240,7 @@ export default function EditorContent() {
             ref={titleRef}
           ></div>
           <div
-            className="px-8 text-base"
+            className="flex flex-col gap-2 px-2 lg:px-8 text-lg"
             id="body"
             contentEditable="true"
             onKeyDown={keyController}
@@ -242,7 +248,7 @@ export default function EditorContent() {
             ref={bodyRef}
           ></div>
         </Card>
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2 py-2">
           <Button
             backGroundColor={"gray"}
             textColor={"white"}
@@ -270,6 +276,9 @@ export default function EditorContent() {
             {!!pageId ? "更新" : "投稿"}
           </Button>
         </div>
+        <Card>
+          <CommentMenu pageId={pageId} isEditor={true}/>
+        </Card>
       </Base>
     </>
   );

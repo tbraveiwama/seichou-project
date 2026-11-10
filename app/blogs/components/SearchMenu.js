@@ -15,14 +15,17 @@ export default function SearchMenu({
   currentView,
   sortSessionSetter,
   searchWordSessionSetter,
-  // isRestored,
+  isRestored,
 }) {
   //ここでしか使わない、検索バーに入力された文字を取り出すためのref
   const inputRef = useRef(null);
   useEffect(() => {
-    // if (!isRestored) return;
+    //復元完了まで待つ
+    if (!isRestored) {
+      return;
+    }
     inputRef.current.value = searchWord;
-  }, []);
+  }, [isRestored]);
   //検索
   function searchExe() {
     setSearchWord(inputRef.current.value);
