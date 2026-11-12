@@ -4,10 +4,11 @@ import SearchMenu from "./components/SearchMenu";
 import BlogLinkList from "./components/BlogLinkList";
 import { useState, useEffect } from "react";
 import { useUser } from "../hooks/useUser";
+import ViewMenu from "./components/ViewMenu";
 
 export default function Blogs() {
+  //画面・並べ替え・検索ワードを親が持ち、子にセッターを渡す
   const [currentView, setCurrentView] = useState("articles");
-  //並べ替え・検索ワードを親が持ち、子にセッターを渡す
   const [sort, setSort] = useState("created");
   const [searchWord, setSearchWord] = useState("");
   //pageLinkListに渡す用
@@ -20,6 +21,9 @@ export default function Blogs() {
   const [pageInfo, setPageInfo] = useState({ key: condition, pageNum: 1 });
 
   //子に渡す用のsessionStorageセッター
+  function currentViewSessionSetter(value) {
+    sessionStorage.setItem("currentViewSession", value);
+  }
   function sortSessionSetter(value) {
     sessionStorage.setItem("sortSession", value);
   }
@@ -51,50 +55,6 @@ export default function Blogs() {
 
   const isLogin = useUser();
 
-  const ViewTabs =
-    currentView === "articles" ? (
-      <>
-        <span className="bg-sky-300 px-4 pt-1 text-xl rounded-t-xl text-white shrink-0">
-          記事
-        </span>
-        <span
-          className="bg-sky-200 px-4 pt-1 text-xl rounded-t-xl text-white shrink-0 cursor-pointer hover:bg-sky-300"
-          onClick={() => {
-            //並び順を強制的に「閲覧日時」に
-            setSort("viewed");
-            setCurrentView("history");
-            //sessionStorageに入れる
-            sessionStorage.setItem("currentViewSession", "history");
-            sortSessionSetter("viewed");
-          }}
-        >
-          履歴
-        </span>
-      </>
-    ) : (
-      <>
-        <span
-          className="bg-sky-200 px-4 pt-1 text-xl rounded-t-xl text-white shrink-0 cursor-pointer hover:bg-sky-300"
-          onClick={() => {
-            //並び順が「閲覧日時」のとき、「作成日時」に変える
-            if (sort === "viewed") {
-              setSort("created");
-              //sessionStorageに入れる
-              sortSessionSetter("created");
-            }
-            setCurrentView("articles");
-            //sessionStorageに入れる
-            sessionStorage.setItem("currentViewSession", "articles");
-          }}
-        >
-          記事
-        </span>
-        <span className="bg-sky-300 px-4 pt-1 text-xl rounded-t-xl text-white shrink-0">
-          履歴
-        </span>
-      </>
-    );
-
   return (
     <>
       <Base>
@@ -110,7 +70,14 @@ export default function Blogs() {
           isRestored={isRestored}
         />
         <div>
-          <div className="pl-4 flex gap-1 relative z-0">{ViewTabs}</div>
+          <ViewMenu
+            currentView={currentView}
+            sort={sort}
+            setCurrentView={setCurrentView}
+            setSort={setSort}
+            sortSessionSetter={sortSessionSetter}
+            currentViewSessionSetter={currentViewSessionSetter}
+          />
           <BlogLinkList
             condition={condition}
             isRestored={isRestored}
