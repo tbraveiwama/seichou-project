@@ -206,6 +206,15 @@ export default function EditorContent() {
           router.push("/blogs");
           return;
         }
+        //履歴から削除
+        const historyArray = JSON.parse(localStorage.getItem("history"));
+        if (historyArray.indexOf(String(pageId) !== -1)) {
+          const index = historyArray.indexOf(String(pageId));
+          historyArray.splice(index, 1);
+          localStorage.setItem("history", JSON.stringify(historyArray));
+        } else {
+          console.log("localStorageエラー:履歴無し");
+        }
         await Swal.fire({
           title: "削除しました",
           confirmButtonText: "OK",
@@ -277,7 +286,7 @@ export default function EditorContent() {
           </Button>
         </div>
         <Card>
-          <CommentMenu pageId={pageId} isEditor={true}/>
+          <CommentMenu pageId={pageId} isEditor={true} />
         </Card>
       </Base>
     </>

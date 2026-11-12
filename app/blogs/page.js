@@ -10,12 +10,17 @@ export default function Blogs() {
   //並べ替え・検索ワードを親が持ち、子にセッターを渡す
   const [sort, setSort] = useState("created");
   const [searchWord, setSearchWord] = useState("");
+  
+
   //子に渡す用のsessionStorageセッター
   function sortSessionSetter(value) {
     sessionStorage.setItem("sortSession", value);
   }
   function searchWordSessionSetter(value) {
     sessionStorage.setItem("searchWordSession", value);
+  }
+  function pageNumSessionSetter(value){
+    sessionStorage.setItem("pageNum",value);
   }
   //復元終了までページ取得を待たせる
   const [isRestored, setIsRestored] = useState(false);
@@ -28,6 +33,7 @@ export default function Blogs() {
       );
       setSort(sessionStorage.getItem("sortSession") ?? "created");
       setSearchWord(sessionStorage.getItem("searchWordSession") ?? "");
+      setPageNum
       setIsRestored(true);
     };
     getSessions();

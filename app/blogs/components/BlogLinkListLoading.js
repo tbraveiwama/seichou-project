@@ -1,3 +1,4 @@
+//今は使用していないコンポーネント
 import { textSize } from "@/lib/textStyle";
 import { cn } from "@/lib/utils";
 
