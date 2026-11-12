@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+@utility no-spinner {
+    appearance: textfield;
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+        appearance: none;
+        margin: 0;
+    }
+}
+
 @layer components {
     .cd {
         min-height: 24px;

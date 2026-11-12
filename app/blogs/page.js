@@ -11,6 +11,9 @@ export default function Blogs() {
   const [currentView, setCurrentView] = useState("articles");
   const [sort, setSort] = useState("created");
   const [searchWord, setSearchWord] = useState("");
+  //並び順・表示件数も管理
+  const [ascending,setAscending] = useState(false);
+  const [itemsDisplayed,setItemsDisplayed] = useState(20);
   //pageLinkListに渡す用
   const condition = {
     currentView: currentView,
@@ -77,6 +80,8 @@ export default function Blogs() {
             setSort={setSort}
             sortSessionSetter={sortSessionSetter}
             currentViewSessionSetter={currentViewSessionSetter}
+            ascending={ascending}
+            itemsDisplayed={itemsDisplayed}
           />
           <BlogLinkList
             condition={condition}

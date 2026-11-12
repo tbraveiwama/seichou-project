@@ -19,6 +19,7 @@ export default function Select({ children, ...props }) {
         "text-white",
         "cursor-pointer",
         "hover:bg-gray-400",
+        "shrink-0",
       )}
       {...props}
     >

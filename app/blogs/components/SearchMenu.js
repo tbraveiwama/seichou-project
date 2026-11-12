@@ -39,10 +39,10 @@ export default function SearchMenu({
   return (
     <div className="flex flex-col gap-5 items-center lg:gap-9 pb-5">
       <TitleText>記事一覧</TitleText>
-      <div className="flex gap-2 lg:gap-9">
+      <div className="flex gap-2 lg:gap-9 w-full justify-end">
         <input
           type="text"
-          className="bg-white rounded-full h-8 lg:h-10 w-2/3 lg:w-120 shadow-md px-4"
+          className="bg-white rounded-full h-8 lg:h-10 w-full shadow-md px-4"
           ref={inputRef}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
