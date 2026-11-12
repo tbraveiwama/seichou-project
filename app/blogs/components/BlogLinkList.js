@@ -8,25 +8,39 @@ import TitleCardLoading from "./TitleCardLoading";
 
 //supabaseで取得し、ページネーションして返す
 export default function BlogLinkList({
-  currentView,
-  sort,
-  searchWord,
+  condition,
   isRestored,
+  pageInfo,
+  pageNumSessionSetter,
 }) {
-  //状態キー（ページの検索条件、ソート、ビューの状態を記録し後から照合するためのキー）を発行
-  //再レンダリングの度に再発行される
-  const conditionKey = `${currentView}|${sort}|${searchWord}`;
-  //ページの情報を記録し格納、後で状態キーと比較する用のstate（初期のページ番号は1）
-  //useStateなので再レンダリングされてもかわらない
-  const [pageInfo, setPageInfo] = useState({ key: conditionKey, pageNum: 1 });
-  //条件が変わったら、新しい条件・1ページ目に書き換える
+  //コンポーネント関数の実行中に、親を再レンダリングしてしまうとエラーが出るのでセッターは受け取らない
+  const [localPageInfo, setLocalPageInfo] = useState(pageInfo);
+  //となると、復元用のeffectを作り、復元した後でデータを取得する必要がある(二重送信対策)
+  const [localIsRestored, setLocalIsRestored] = useState(false);
+  //復元用
+  useEffect(() => {
+    if (isRestored) {
+      //親コンポーネントで、pageInfo.pageNumはsessionStorageからとってきたが、keyは取ってきていないのでconditionを入れる
+      setLocalPageInfo({ key: condition, pageNum: pageInfo.pageNum });
+      setLocalIsRestored(true);
+    }
+  }, [isRestored]);
+  //conditonから分割代入
+  const { currentView, sort, searchWord } = condition;
+  //pageInfoは、ページの情報を記録し格納、後でconditonと比較する用のstate（初期のページ番号は1）
+  //可読性
+  const pageNum = localPageInfo.pageNum;
+  const pageInfoKey = localPageInfo.key;
+  //conditionの中身が変わったことを検知し、新しい条件・1ページ目に書き換える
   //コンポーネント関数の実行中にstateが置き換わったら、レンダリングを捨てて(returnが描画されない)もう一度再レンダリングが走る仕様
   //useEffectも、DOM反映後に実行されるものなので、レンダリングが捨てられた場合は実行されないので二重取得もしない
-  if (pageInfo.key !== conditionKey) {
-    setPageInfo({ key: conditionKey, pageNum: 1 });
+  if (
+    pageInfoKey.currentView !== currentView ||
+    pageInfoKey.sort !== sort ||
+    pageInfoKey.searchWord !== searchWord
+  ) {
+    setLocalPageInfo({ key: condition, pageNum: 1 });
   }
-  //可読性
-  const pageNum = pageInfo.pageNum;
 
   const [pageList, setPageList] = useState([]);
   //ロード画面
@@ -38,11 +52,11 @@ export default function BlogLinkList({
   const [maxPage, setMaxPage] = useState(1);
 
   //表示件数
-  const perPage = 5;
+  const perPage = 20;
 
   //ページャー用
   useEffect(() => {
-    if (!isRestored) return;
+    if (!localIsRestored) return;
     //最大ページ数のみを非同期的に取得する
     const fetchMaxPage = async () => {
       setIsCountLoading(true);
@@ -83,12 +97,12 @@ export default function BlogLinkList({
       setIsCountLoading(false);
     };
     fetchMaxPage();
-  }, [currentView, searchWord, isRestored]);
+  }, [currentView, searchWord, localIsRestored]);
 
   //supabaseでの取得・並べ替え・検索処理
   useEffect(() => {
     //復元完了するまでは何もしない
-    if (!isRestored) {
+    if (!localIsRestored) {
       return;
     }
     //検索ボックス内の言葉を配列化
@@ -171,7 +185,8 @@ export default function BlogLinkList({
       case "history":
         fetchHistoryList();
     }
-  }, [currentView, sort, searchWord, isRestored, pageNum]);
+    pageNumSessionSetter(localPageInfo.pageNum);
+  }, [currentView, sort, searchWord, localIsRestored, pageNum]);
 
   //加工
   const cardList = isLoading ? (
@@ -240,11 +255,11 @@ export default function BlogLinkList({
   );
 
   function nextPage() {
-    setPageInfo({ key: conditionKey, pageNum: pageNum + 1 });
+    setLocalPageInfo({ key: condition, pageNum: pageNum + 1 });
   }
 
   function prevPage() {
-    setPageInfo({ key: conditionKey, pageNum: pageNum - 1 });
+    setLocalPageInfo({ key: condition, pageNum: pageNum - 1 });
   }
 
   return (
