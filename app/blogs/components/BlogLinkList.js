@@ -120,7 +120,7 @@ export default function BlogLinkList({
     //検索ボックス内の言葉を配列化
     //[/\s+]は、一つ以上の空白を全角・半角問わずまとめて一つの空白として扱う
     const searchWordArray = searchWord.split(/\s+/).filter(Boolean);
-    let query = supabase.from("pages").select("page_id,title,created,views");
+    let query = supabase.from("pages").select("page_id,title,created,views,updated");
     //searchWordがあるとき
     if (searchWord !== "") {
       searchWordArray.forEach((word) => {
@@ -245,9 +245,10 @@ export default function BlogLinkList({
     pageList.map((e) => {
       //TimeStampを年月日に加工
       const created = toDate(e.created);
+      const updated = toDate(e.updated);
       return (
         <Link href={`/blogs/${e.page_id}`} key={e.page_id}>
-          <TitleCard date={created} title={e.title} views={e.views}></TitleCard>
+          <TitleCard date={created} title={e.title} views={e.views} updated={updated}></TitleCard>
         </Link>
       );
     })

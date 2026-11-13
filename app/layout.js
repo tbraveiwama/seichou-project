@@ -18,7 +18,7 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="ja" suppressHydrationWarning>
-      <body className={cn(textSize.sm, backGroundColor)}>
+      <body className={cn(textSize.sm, backGroundColor,"flex h-screen flex-col")}>
         {/* ヘッダー：全ページの上部に表示 */}
         <Header />
         <div className="sticky top-0 z-10 bg-sky-300 flex h-6 md:h-8">
@@ -31,7 +31,7 @@ export default function RootLayout({ children }) {
         </div>
 
         {/* children：各ページの本文がここに入る */}
-        <main className="flex-grow">{children}</main>
+        <main className="flex-1 overflow-auto">{children}</main>
 
         {/* フッター：全ページの下部に表示 */}
       </body>

@@ -228,7 +228,7 @@ export default function EditorContent() {
 
   return (
     <>
-      <div className="flex flex-col items-center sticky top-8 z-10 bg-gray-200">
+      <div className="flex flex-col items-center sticky top-0 z-10 bg-gray-200">
         <div>
           <EditButton onClick={mainText}>本文</EditButton>
           <EditButton onClick={minTitle}>小見出し</EditButton>

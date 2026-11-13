@@ -2,7 +2,6 @@
 
 import { textSize } from "@/lib/textStyle";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 import { useEffect } from "react";
 import { useRef } from "react";
 
@@ -28,14 +27,13 @@ export default function ViewMenu({
 
   //表示件数変更
   function changeItemsDisplayed() {
-    let displayed = itemsDisplayedRef.current.value;
-    if (displayed === "") {
+    if (itemsDisplayedRef.current.value === "") {
       return;
-    } else if (displayed <= 0) {
-      displayed = 1;
+    } else if (itemsDisplayedRef.current.value <= 0) {
+      itemsDisplayedRef.current.value = 1;
     }
-    setItemsDisplayed(displayed);
-    sessionSetter({ itemsDisplayed: displayed });
+    setItemsDisplayed(itemsDisplayedRef.current.value);
+    sessionSetter({ itemsDisplayed: itemsDisplayedRef.current.value });
   }
 
   //並び順変更
@@ -57,9 +55,14 @@ export default function ViewMenu({
             //並び順を強制的に「閲覧日時」に
             setSort("viewed");
             setCurrentView("history");
+            //強制的に「降順」に
+            setAscending(false);
             //sessionStorageに入れる
-            sessionSetter({ sort: "viewed" });
-            sessionSetter({ currentView: "history" });
+            sessionSetter({
+              sort: "viewed",
+              currentView: "history",
+              ascending: false,
+            });
           }}
         >
           履歴

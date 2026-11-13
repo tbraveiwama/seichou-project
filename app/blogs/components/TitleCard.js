@@ -2,7 +2,7 @@ import { textSize } from "@/lib/textStyle";
 import { cn } from "@/lib/utils";
 import { HTMLChanger } from "./HTMLChanger";
 
-export default function TitleCard({ date, title, views }) {
+export default function TitleCard({ date, title, views ,updated}) {
   //titleが70文字を超える場合、以降は...で省略する
   if (title.length > 70) {
     title = title.slice(0, 70) + "......";
@@ -15,7 +15,7 @@ export default function TitleCard({ date, title, views }) {
       )}
     >
       <div className="w-full">
-        <div className="text-gray-400 pl-2">作成日:{date}</div>
+        <div className="text-gray-400 pl-2">作成日:{date}｜最終更新日:{updated}</div>
         <div className="px-2 wrap-break-word"><HTMLChanger text={title}/></div>
         <div className="text-gray-400 flex justify-end pr-2">
           閲覧数:{views}

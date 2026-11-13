@@ -19,8 +19,8 @@ export default async function BlogPages({ params }) {
     .from("pages")
     .select("*")
     .eq("page_id", id);
-  if(error){
-    return <div>データを取得できませんでした</div>
+  if (error) {
+    return <div>データを取得できませんでした</div>;
   }
   const pageData = data[0];
   const created = toDate(pageData.created);
