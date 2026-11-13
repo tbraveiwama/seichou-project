@@ -13,8 +13,7 @@ export default function SearchMenu({
   setSearchWord,
   isLogin,
   currentView,
-  sortSessionSetter,
-  searchWordSessionSetter,
+  sessionSetter,
   isRestored,
 }) {
   //ここでしか使わない、検索バーに入力された文字を取り出すためのref
@@ -29,12 +28,12 @@ export default function SearchMenu({
   //検索
   function searchExe() {
     setSearchWord(inputRef.current.value);
-    searchWordSessionSetter(inputRef.current.value);
+    sessionSetter({searchWord:inputRef.current.value});
   }
   //ソート
   function sortExe(e) {
     setSort(e.target.value);
-    sortSessionSetter(e.target.value);
+    sessionSetter({sort:e.target.value});
   }
   return (
     <div className="flex flex-col gap-5 items-center lg:gap-9 pb-5">

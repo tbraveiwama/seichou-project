@@ -11,7 +11,7 @@ export default function BlogLinkList({
   condition,
   isRestored,
   pageInfo,
-  pageNumSessionSetter,
+  sessionSetter,
 }) {
   //コンポーネント関数の実行中に、親を再レンダリングしてしまうとエラーが出るのでセッターは受け取らない
   const [localPageInfo, setLocalPageInfo] = useState(pageInfo);
@@ -26,7 +26,8 @@ export default function BlogLinkList({
     }
   }, [isRestored]);
   //conditonから分割代入
-  const { currentView, sort, searchWord } = condition;
+  const { currentView, sort, searchWord, itemsDisplayed, ascending } =
+    condition;
   //pageInfoは、ページの情報を記録し格納、後でconditonと比較する用のstate（初期のページ番号は1）
   //可読性
   const pageNum = localPageInfo.pageNum;
@@ -37,7 +38,9 @@ export default function BlogLinkList({
   if (
     pageInfoKey.currentView !== currentView ||
     pageInfoKey.sort !== sort ||
-    pageInfoKey.searchWord !== searchWord
+    pageInfoKey.searchWord !== searchWord ||
+    pageInfoKey.itemsDisplayed !== itemsDisplayed ||
+    pageInfoKey.ascending !== ascending
   ) {
     setLocalPageInfo({ key: condition, pageNum: 1 });
   }
@@ -52,11 +55,12 @@ export default function BlogLinkList({
   const [maxPage, setMaxPage] = useState(1);
 
   //表示件数
-  const perPage = 20;
+  const perPage = itemsDisplayed;
 
   //ページャー用
   useEffect(() => {
     if (!localIsRestored) return;
+    let ignore = false;
     //最大ページ数のみを非同期的に取得する
     const fetchMaxPage = async () => {
       setIsCountLoading(true);
@@ -83,12 +87,14 @@ export default function BlogLinkList({
         queryCounter = queryCounter.in("page_id", historyArray);
       }
       const { count, error } = await queryCounter;
+      //データ取得時に次のuseEffectが走っていれば、state更新は行わない
+      if (ignore) return;
+
       if (error) {
         console.log("error:", error);
         setIsCountLoading(false);
         return;
       }
-      console.log("count:", count);
       if (count === 0) {
         setMaxPage(1);
       } else {
@@ -97,7 +103,12 @@ export default function BlogLinkList({
       setIsCountLoading(false);
     };
     fetchMaxPage();
-  }, [currentView, searchWord, localIsRestored]);
+
+    return () => {
+      //コールバック(次のuseEffectの実行の直前)時に実行する関数
+      ignore = true;
+    };
+  }, [currentView, searchWord, localIsRestored, itemsDisplayed]);
 
   //supabaseでの取得・並べ替え・検索処理
   useEffect(() => {
@@ -105,6 +116,7 @@ export default function BlogLinkList({
     if (!localIsRestored) {
       return;
     }
+    let ignore = false;
     //検索ボックス内の言葉を配列化
     //[/\s+]は、一つ以上の空白を全角・半角問わずまとめて一つの空白として扱う
     const searchWordArray = searchWord.split(/\s+/).filter(Boolean);
@@ -120,14 +132,19 @@ export default function BlogLinkList({
     const fetchPageList = async () => {
       //ソート(閲覧日時はsupabaseの管理外な関係上、こちらで行う)
       query = query
-        .order(sort, { ascending: false })
+        .order(sort, { ascending: ascending })
         .range((pageNum - 1) * perPage, pageNum * perPage - 1);
       //ロード画面
       setIsLoading(true);
 
       //データ取得
       const { data, error } = await query;
-      if (error) console.error(error);
+      if (ignore) return;
+      if (error) {
+        console.error(error);
+        setIsLoading(false);
+        return;
+      }
       //state更新
       setPageList(data ?? []);
       //ロード画面終了
@@ -150,7 +167,12 @@ export default function BlogLinkList({
       if (sort === "viewed") {
         //viewedはsupabase管理外の都合上、一旦全件取得してからフィルター
         const { data, error } = await query;
-        if (error) console.error(error);
+        if (ignore) return;
+        if (error) {
+          console.error(error);
+          setIsLoading(false);
+          return;
+        }
         //supabaseが履歴順にソートしてくれないので
         const map = new Map(
           (data ?? []).map((row) => {
@@ -160,6 +182,10 @@ export default function BlogLinkList({
         const sorted = historyArray
           .map((id) => map.get(String(id)))
           .filter(Boolean);
+        if (ascending) {
+          sorted.reverse();
+          console.log(sorted);
+        }
         const filtered = sorted.slice(
           (pageNum - 1) * perPage,
           pageNum * perPage,
@@ -169,10 +195,15 @@ export default function BlogLinkList({
       } else {
         //閲覧日時はsupabaseの管理外なので、こちらで行う
         query = query
-          .order(sort, { ascending: false })
+          .order(sort, { ascending: ascending })
           .range((pageNum - 1) * perPage, pageNum * perPage - 1);
         const { data, error } = await query;
-        if (error) console.error(error);
+        if (ignore) return;
+        if (error) {
+          console.error(error);
+          setIsLoading(false);
+          return;
+        }
         setPageList(data ?? []);
         setIsLoading(false);
       }
@@ -185,8 +216,20 @@ export default function BlogLinkList({
       case "history":
         fetchHistoryList();
     }
-    pageNumSessionSetter(localPageInfo.pageNum);
-  }, [currentView, sort, searchWord, localIsRestored, pageNum]);
+    sessionSetter({ pageNum: localPageInfo.pageNum });
+
+    return () => {
+      ignore = true;
+    };
+  }, [
+    currentView,
+    sort,
+    searchWord,
+    localIsRestored,
+    pageNum,
+    itemsDisplayed,
+    ascending,
+  ]);
 
   //加工
   const cardList = isLoading ? (
@@ -229,7 +272,6 @@ export default function BlogLinkList({
     </>
   ) : (
     <>
-      {" "}
       {pageNum > 1 && (
         <button
           type="button"
@@ -264,7 +306,7 @@ export default function BlogLinkList({
 
   return (
     <>
-      <div className="bg-gray-200 rounded-t-xl px-4 py-4 relative z-1 flex flex-col gap-6 overflow-y-scroll w-full h-[520px] lg:h-[600px]">
+      <div className="bg-gray-200 rounded-t-xl px-4 py-4 relative z-1 flex flex-col gap-6 overflow-y-scroll overflow-x-hidden w-full h-[520px] lg:h-[600px]">
         {cardList}
       </div>
       <div className="bg-gray-200 rounded-b-xl py-3 z-1 gap-6 w-full h-16">

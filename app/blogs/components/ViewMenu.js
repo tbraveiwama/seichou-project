@@ -2,18 +2,48 @@
 
 import { textSize } from "@/lib/textStyle";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { useEffect } from "react";
+import { useRef } from "react";
 
 export default function ViewMenu({
   currentView,
   sort,
   setCurrentView,
   setSort,
-  sortSessionSetter,
-  currentViewSessionSetter,
+  sessionSetter,
   ascending,
+  setAscending,
   itemsDisplayed,
+  setItemsDisplayed,
+  isRestored,
 }) {
-  const order = ascending ? "ascending" : "descending";
+  const itemsDisplayedRef = useRef();
+  useEffect(() => {
+    if (isRestored) {
+      //onChangeは発火しない
+      itemsDisplayedRef.current.value = itemsDisplayed;
+    }
+  }, [isRestored]);
+
+  //表示件数変更
+  function changeItemsDisplayed() {
+    let displayed = itemsDisplayedRef.current.value;
+    if (displayed === "") {
+      return;
+    } else if (displayed <= 0) {
+      displayed = 1;
+    }
+    setItemsDisplayed(displayed);
+    sessionSetter({ itemsDisplayed: displayed });
+  }
+
+  //並び順変更
+  function changeOrder(value) {
+    const isAscending = value === "ascending" ? true : false;
+    setAscending(isAscending);
+    sessionSetter({ ascending: isAscending });
+  }
 
   const ViewTabs =
     currentView === "articles" ? (
@@ -28,8 +58,8 @@ export default function ViewMenu({
             setSort("viewed");
             setCurrentView("history");
             //sessionStorageに入れる
-            currentViewSessionSetter("history");
-            sortSessionSetter("viewed");
+            sessionSetter({ sort: "viewed" });
+            sessionSetter({ currentView: "history" });
           }}
         >
           履歴
@@ -44,11 +74,11 @@ export default function ViewMenu({
             if (sort === "viewed") {
               setSort("created");
               //sessionStorageに入れる
-              sortSessionSetter("created");
+              sessionSetter({ sort: "created" });
             }
             setCurrentView("articles");
             //sessionStorageに入れる
-            currentViewSessionSetter("articles");
+            sessionSetter({ currentView: "articles" });
           }}
         >
           記事
@@ -88,7 +118,10 @@ export default function ViewMenu({
               textSize.xs,
               "appearance-none font-bold rounded-full bg-gray-300 hover:bg-gray-500 h-6 w-1/2 lg:h-8 cursor-pointer text-center",
             )}
-            defaultValue={order}
+            value={ascending ? "ascending" : "descending"}
+            onChange={(e) => {
+              changeOrder(e.target.value);
+            }}
           >
             <option value="ascending">昇順▼</option>
             <option value="descending">降順▼</option>
@@ -121,7 +154,9 @@ export default function ViewMenu({
           <input
             type="number"
             className="bg-white rounded-full w-1/3 text-gray-400 text-center no-spinner min-w-5"
-            value={itemsDisplayed}
+            // value={itemsDisplayed}
+            ref={itemsDisplayedRef}
+            onChange={changeItemsDisplayed}
           ></input>
         </span>
       </div>
