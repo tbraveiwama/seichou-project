@@ -133,6 +133,7 @@ export default function BlogLinkList({
       //ソート(閲覧日時はsupabaseの管理外な関係上、こちらで行う)
       query = query
         .order(sort, { ascending: ascending })
+        .order("page_id", { ascending: ascending })
         .range((pageNum - 1) * perPage, pageNum * perPage - 1);
       //ロード画面
       setIsLoading(true);
@@ -196,6 +197,7 @@ export default function BlogLinkList({
         //閲覧日時はsupabaseの管理外なので、こちらで行う
         query = query
           .order(sort, { ascending: ascending })
+          .order("page_id", { ascending: ascending })
           .range((pageNum - 1) * perPage, pageNum * perPage - 1);
         const { data, error } = await query;
         if (ignore) return;
