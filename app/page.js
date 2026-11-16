@@ -1,11 +1,17 @@
 "use client";
-import Link from "next/link";
-import { supabase } from "@/lib/supabase";
-import { useEffect } from "react";
 import NotFound from "./not-found";
 
 export default function Index() {
-  return (
-    <NotFound />
-  );
+  //現在時刻取得
+  const now = new Date();
+  const nextNow = now.toLocaleString("ja-JP", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  });
+  console.log(nextNow);
+  return <NotFound />;
 }

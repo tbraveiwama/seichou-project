@@ -83,13 +83,16 @@ export default function BlogLinkList({
           setIsCountLoading(false);
           return;
         }
+        //pageIdだけ取り出し
+        const historyIdArray = historyArray.map((history) => {
+          return history.pageId;
+        });
         //履歴で絞り込み
-        queryCounter = queryCounter.in("page_id", historyArray);
+        queryCounter = queryCounter.in("page_id", historyIdArray);
       }
       const { count, error } = await queryCounter;
       //データ取得時に次のuseEffectが走っていれば、state更新は行わない
       if (ignore) return;
-
       if (error) {
         console.log("error:", error);
         setIsCountLoading(false);
@@ -120,7 +123,9 @@ export default function BlogLinkList({
     //検索ボックス内の言葉を配列化
     //[/\s+]は、一つ以上の空白を全角・半角問わずまとめて一つの空白として扱う
     const searchWordArray = searchWord.split(/\s+/).filter(Boolean);
-    let query = supabase.from("pages").select("page_id,title,created,views,updated");
+    let query = supabase
+      .from("pages")
+      .select("page_id,title,created,views,updated");
     //searchWordがあるとき
     if (searchWord !== "") {
       searchWordArray.forEach((word) => {
@@ -137,7 +142,6 @@ export default function BlogLinkList({
         .range((pageNum - 1) * perPage, pageNum * perPage - 1);
       //ロード画面
       setIsLoading(true);
-
       //データ取得
       const { data, error } = await query;
       if (ignore) return;
@@ -154,7 +158,6 @@ export default function BlogLinkList({
 
     const fetchHistoryList = async () => {
       setIsLoading(true);
-      console.log(localStorage.getItem("history"));
       const historyArray = JSON.parse(localStorage.getItem("history")) ?? [];
       //履歴が空なら終了
       if (historyArray.length === 0) {
@@ -163,9 +166,28 @@ export default function BlogLinkList({
         return;
       }
 
+      //pageIdだけ取り出し
+      const historyIdArray = historyArray.map((history) => {
+        return history.pageId;
+      });
+
       //履歴で絞り込み
-      query = query.in("page_id", historyArray);
+      query = query.in("page_id", historyIdArray);
       if (sort === "viewed") {
+
+        //pageListの各オブジェクトにviewedというプロパティを追加するための処理
+        //LocalStorageの配列をpage_idがキー、viewedが値のMapで保存
+        const viewedMap = new Map(
+          historyArray.map((h) => [String(h.pageId), h.viewed]),
+        );
+        //オブジェクトの配列を受け取り、各オブジェクトに新しくviewedという項目を追加する
+        //受け取ったオブジェクトの配列のオブジェクトごとのpage_idが、LocalStorageのpageIdに対応するLocalStorageのviewedを追加する
+        const withViewed = (rows) =>
+          rows.map((row) => ({
+            ...row,
+            viewed: viewedMap.get(String(row.page_id)),
+          }));
+
         //viewedはsupabase管理外の都合上、一旦全件取得してからフィルター
         const { data, error } = await query;
         if (ignore) return;
@@ -180,18 +202,17 @@ export default function BlogLinkList({
             return [String(row.page_id), row];
           }),
         );
-        const sorted = historyArray
+        const sorted = historyIdArray
           .map((id) => map.get(String(id)))
           .filter(Boolean);
         if (ascending) {
           sorted.reverse();
-          console.log(sorted);
         }
         const filtered = sorted.slice(
           (pageNum - 1) * perPage,
           pageNum * perPage,
         );
-        setPageList(filtered);
+        setPageList(withViewed(filtered));
         setIsLoading(false);
       } else {
         //閲覧日時はsupabaseの管理外なので、こちらで行う
@@ -234,29 +255,50 @@ export default function BlogLinkList({
   ]);
 
   //加工
-  const cardList = isLoading ? (
-    <>
-      <TitleCardLoading />
-      <TitleCardLoading />
-      <TitleCardLoading />
-      <TitleCardLoading />
-    </>
-  ) : (
-    pageList.map((e) => {
-      //TimeStampを年月日に加工
-      const created = toDate(e.created);
-      const updated = toDate(e.updated);
-      return (
-        <Link href={`/blogs/${e.page_id}`} key={e.page_id}>
-          <TitleCard date={created} title={e.title} views={e.views} updated={updated}></TitleCard>
-        </Link>
-      );
-    })
-  );
+  let cardList;
+  if (isLoading) {
+    cardList = (
+      <>
+        <TitleCardLoading />
+        <TitleCardLoading />
+        <TitleCardLoading />
+        <TitleCardLoading />
+      </>
+    );
+  } else {
+    if (sort === "viewed") {
+      cardList = pageList.map((e) => {
+        return (
+          <Link href={`/blogs/${e.page_id}`} key={e.page_id}>
+            <TitleCard
+              title={e.title}
+              views={e.views}
+              viewed={e.viewed}
+            ></TitleCard>
+          </Link>
+        );
+      });
+    } else {
+      cardList = pageList.map((e) => {
+        //TimeStampを年月日に加工
+        const created = toDate(e.created);
+        const updated = toDate(e.updated);
+        return (
+          <Link href={`/blogs/${e.page_id}`} key={e.page_id}>
+            <TitleCard
+              date={created}
+              title={e.title}
+              views={e.views}
+              updated={updated}
+            ></TitleCard>
+          </Link>
+        );
+      });
+    }
+  }
 
   const pager = isCountLoading ? (
     <>
-      {" "}
       <button
         type="button"
         className="bg-gray-50 py-1 px-2 text-gray-200 border border-gray-500 text-lg shrink-0 animate-pulse cursor-wait"
@@ -309,7 +351,7 @@ export default function BlogLinkList({
 
   return (
     <>
-      <div className="bg-gray-200 rounded-t-xl px-4 py-4 relative z-1 flex flex-col gap-6 overflow-y-scroll overflow-x-hidden w-full h-[520px] lg:h-[600px]">
+      <div className="bg-gray-200 rounded-t-xl p-2 lg:p-4 relative z-1 flex flex-col gap-4 lg:gap-6 overflow-y-scroll overflow-x-hidden w-full h-[300px] lg:h-[600px]">
         {cardList}
       </div>
       <div className="bg-gray-200 rounded-b-xl py-3 z-1 gap-6 w-full h-16">
