@@ -10,9 +10,32 @@
     }
 }
 
+::-webkit-scrollbar {
+  height: 5px;
+  width: 5px;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #999;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 @layer components {
     .cd {
-        @apply min-h-6 bg-gray-600 rounded-xl text-white p-2 my-2 overflow-auto ;
+        @apply min-h-6 bg-gray-600 rounded-xl text-white p-2 my-2 overflow-auto whitespace-nowrap;
     }
 
     .mt {
