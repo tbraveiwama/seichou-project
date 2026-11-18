@@ -7,13 +7,24 @@ import { supabase } from "@/lib/supabase";
 import { useState } from "react";
 import { useRef } from "react";
 import { useRouter } from "next/navigation";
+import { hasInAppHistory } from "@/lib/navigation";
+import { useUser } from "../hooks/useUser";
 
 export default function Blogs() {
+  const isLogin = useUser();
   const [authError, setAuthError] = useState(false);
   const [authLock, setAuthLock] = useState(false);
   const nameRef = useRef(null);
   const passRef = useRef(null);
   const router = useRouter();
+
+  function handleBack() {
+    if (hasInAppHistory()) {
+      router.back();
+    } else {
+      router.push("/blogs");
+    }
+  }
 
   //emailによる認証しかないので
   async function login() {
@@ -32,7 +43,7 @@ export default function Blogs() {
       return;
     }
 
-    router.push("/blogs");
+    handleBack();
   }
 
   async function logout() {
@@ -78,20 +89,24 @@ export default function Blogs() {
             </div>
           </div>
           <div className="flex justify-end gap-2">
-            <Button
-              backGroundColor={"orange"}
-              textColor={"white"}
-              onClick={login}
-            >
-              ログイン
-            </Button>
-            <Button
-            backGroundColor={"red"}
-            textColor={"white"}
-              onClick={logout}
-            >
-              ログアウト
-            </Button>
+            {!isLogin && (
+              <Button
+                backGroundColor={"orange"}
+                textColor={"white"}
+                onClick={login}
+              >
+                ログイン
+              </Button>
+            )}
+            {isLogin && (
+              <Button
+                backGroundColor={"red"}
+                textColor={"white"}
+                onClick={logout}
+              >
+                ログアウト
+              </Button>
+            )}
           </div>
         </div>
       </div>

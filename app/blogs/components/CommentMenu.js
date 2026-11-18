@@ -44,7 +44,6 @@ export default function CommentMenu({ pageId, isEditor = false }) {
   const comments = commentList
     ? commentList.map((comment, index) => {
       const date = toDate(comment.posted);
-      console.log(date)
         return (
           <div key={index} className="flex items-center justify-between">
             <HoverMsg msg={date}>

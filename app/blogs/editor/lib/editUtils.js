@@ -64,11 +64,11 @@ function wrapSelection(p) {
   //div内にいるのか、divを囲んでいるのか、始点又は終点がdiv内にあるかを判断し、適切な処理を行う
   switch (getDivSelectionRelation(selection)) {
     case "outside": {
-      wrap(range,selection,"span",p);
+      wrap(range, selection, "span", p);
       break;
     }
     case "inside": {
-      wrap(range,selection,"span",p);
+      wrap(range, selection, "span", p);
       break;
     }
     case "enclosed": {
@@ -82,7 +82,7 @@ function wrapSelection(p) {
         const divRange = document.createRange();
         divRange.selectNodeContents(div);
         // ラップ
-        wrap(divRange,selection,"span",p);
+        wrap(divRange, selection, "span", p);
       });
       range.insertNode(content);
 
@@ -90,12 +90,12 @@ function wrapSelection(p) {
       const firstRange = document.createRange();
       firstRange.setStart(range.startContainer, range.startOffset);
       firstRange.setEndBefore(divArray[0]);
-      wrap(firstRange,selection,"span",p);
+      wrap(firstRange, selection, "span", p);
 
       const endRange = document.createRange();
       endRange.setStartAfter(divArray[divArray.length - 1]);
       endRange.setEnd(range.endContainer, range.endOffset);
-      wrap(endRange,selection,"span",p);
+      wrap(endRange, selection, "span", p);
     }
   }
   cleanUp("span");
@@ -117,7 +117,7 @@ function mainText() {
   //div内にいるのか、divを囲んでいるのか、始点又は終点がdiv内にあるかを判断し、適切な処理を行う
   switch (getDivSelectionRelation(selection)) {
     case "outside": {
-      wrap(range,selection,"span","bt");
+      wrap(range, selection, "span", "bt");
       break;
     }
     case "inside": {
@@ -146,7 +146,7 @@ function mainText() {
       const newRange = document.createRange();
       newRange.setStartBefore(first);
       newRange.setEndAfter(last);
-      wrap(newRange,selection,"span","bt");
+      wrap(newRange, selection, "span", "bt");
 
       cleanZwspTag("div");
       break;
@@ -165,7 +165,7 @@ function mainText() {
         div.replaceWith(...div.childNodes);
       });
       range.insertNode(content);
-      wrap(range,selection,"span","bt");
+      wrap(range, selection, "span", "bt");
       cleanZwspTag("div");
       break;
     }
@@ -290,7 +290,7 @@ function wrapDiv(className, childText) {
           div.replaceWith(...div.childNodes);
         });
         range.insertNode(content);
-        wrap(range,selection, "div", className);
+        wrap(range, selection, "div", className);
         //無駄spanが残ってると不具合が出るので
       }
       cleanZwspTag("div");
@@ -343,14 +343,13 @@ function callNodeInElement(node, element) {
   if (node.nodeType === Node.ELEMENT_NODE && node.id === "body") return null;
   if (node.nodeType === Node.ELEMENT_NODE && node.tagName === element)
     return node;
-  while (true) {
+  while (node.parentElement) {
     const parent = node.parentElement;
     if (parent.id === "body") return null;
-    if (parent.tagName === element) {
-      return parent;
-    }
-    node = node.parentElement;
+    if (parent.tagName === element) return parent;
+    node = parent;
   }
+  return null;
 }
 
 //渡されたNodeが特定のidに入っているか否かを判定する。返り値は該当Element
@@ -543,7 +542,7 @@ function unwrapSameStyleTags(tag) {
       const spStyle = getComputedStyle(sp);
       const parentStyle = getComputedStyle(sp.parentNode);
       const isSame = styleArray.every((st) => {
-        spStyle[st] === parentStyle[st];
+        return spStyle[st] === parentStyle[st];
       });
       if (isSame) {
         sp.replaceWith(...sp.childNodes);
@@ -624,152 +623,119 @@ function cleanZwsp(html) {
 }
 
 //タイトルは改行禁止制御
-function titleKeyController(event){
-  if (event.key === "Enter") {
-    //イベントに対してブラウザが本来自動的に行うデフォルトの動作をキャンセルする
-    event.preventDefault();}
-}
-
-//キーボード制御
-function keyController(event) {
-  //Enterキー押下時に処理
+function titleKeyController(event) {
   if (event.key === "Enter") {
     //イベントに対してブラウザが本来自動的に行うデフォルトの動作をキャンセルする
     event.preventDefault();
-    //キャレットの位置を取得
-    const selection = document.getSelection();
-    //キャレットがある要素を取得
-    const node = selection.anchorNode;
-    const parentElement = node.parentElement;
-    //parentElementが<div>で、idがmtなら
-    if (parentElement.tagName === "DIV") {
-      if (parentElement.className === "mt") {
-        //新しく範囲を作成
-        const newRange = document.createRange();
-        //parentElementの後ろに<br>を挿入
-        newRange.setStartAfter(parentElement);
-        const br = document.createElement("BR");
-        newRange.insertNode(br);
-        //collapseを行わないと、insertNodeは<br>が選択されてしまう
-        newRange.collapse(true);
-
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-        return;
-      }
-    }
-    if (parentElement.className !== "title") {
-      document.execCommand("insertLineBreak");
-    }
   }
-  if (event.key === "Backspace") {
-    //<div>が前にあれば無効化する
-    //キャレットのあるノードの、<div id="body">直下の親ノードを抽出する
+}
+
+// キャレット位置の直前にあるノードを返す(空テキスト・ゼロ幅スペースだけのテキストは飛ばす)
+// 同じテキストノード内に文字が残っている場合は "text" を返す
+function getNodeBeforeCaret(range) {
+  const isEmptyText = (n) =>
+    n.nodeType === Node.TEXT_NODE &&
+    n.textContent.replaceAll(ZERO_WIDTH_SPACE, "") === "";
+
+  let node = range.startContainer;
+  let prev = null;
+
+  if (node.nodeType === Node.TEXT_NODE) {
+    // 同じテキストノード内に、キャレットより前の文字があるか
+    const before = node.textContent
+      .slice(0, range.startOffset)
+      .replaceAll(ZERO_WIDTH_SPACE, "");
+    if (before !== "") return "text";
+    prev = node.previousSibling;
+  } else {
+    // 要素内にキャレットがある場合は、offsetの直前の子から
+    prev =
+      range.startOffset > 0 ? node.childNodes[range.startOffset - 1] : null;
+    if (!prev) prev = node.previousSibling;
+  }
+
+  while (true) {
+    while (prev && isEmptyText(prev)) prev = prev.previousSibling;
+    if (prev) return prev;
+    // 兄弟がなければ親へさかのぼる(#bodyに達したら終了)
+    node = node.parentElement;
+    if (!node || node.id === "body") return null;
+    prev = node.previousSibling;
+  }
+}
+
+//キーボード制御
+//キーボード制御
+function keyController(event) {
+  // ===== Enter =====
+  if (event.key === "Enter") {
+    event.preventDefault();
+
     const selection = document.getSelection();
-    //範囲選択ならリターン
-    if (!selection.isCollapsed) {
+    if (selection.rangeCount === 0) return;
+    // #body 外(タイトル欄など)では何もしない
+    if (!callNodeInId(selection.anchorNode, "body")) return;
+
+    // キャレットが小見出し(mt)の中なら、divの後ろに<br>を入れて脱出
+    const parentDiv = callNodeInElement(selection.anchorNode, "DIV");
+    if (parentDiv && parentDiv.className === "mt") {
+      const newRange = document.createRange();
+      newRange.setStartAfter(parentDiv);
+      const br = document.createElement("BR");
+      newRange.insertNode(br);
+      newRange.collapse(true); // collapseしないとinsertNodeで<br>が選択される
+      selection.removeAllRanges();
+      selection.addRange(newRange);
       return;
     }
+
+    document.execCommand("insertLineBreak");
+    return;
+  }
+
+  // ===== Backspace =====
+  if (event.key === "Backspace") {
+    const selection = document.getSelection();
+    if (selection.rangeCount === 0 || !selection.isCollapsed) return;
+    if (!callNodeInId(selection.anchorNode, "body")) return;
     const range = selection.getRangeAt(0);
-    //ノードの先頭ならば
-    if (range.startOffset === 0) {
-      //兄弟ノードがあるノードまでさかのぼる
-      let node = selection.anchorNode;
-      while (true) {
-        if (node.previousSibling) {
-          break;
-        }
-        if (node.parentElement.id === "body") {
-          break;
-        }
-        node = node.parentElement;
-      }
-      if (node.previousSibling) {
-        //直前の""以外のノードが<div>で、テキストが入っているならバックスペースをキャンセルする
 
-        let prev = node.previousSibling;
-        while (prev) {
-          if (prev.nodeType === Node.TEXT_NODE && prev.data === "") {
-            prev = prev.previousSibling;
-          } else if (
-            prev.nodeType === Node.ELEMENT_NODE &&
-            prev.tagName === "DIV" &&
-            node.textContent
-          ) {
-            event.preventDefault();
-            break;
-          } else {
-            break;
-          }
-        }
+    const parentDiv = callNodeInElement(selection.anchorNode, "DIV");
 
-        const childArray = Array.from(node.parentNode.childNodes);
-        let i;
-        let isPreviousBr;
-        let isBr;
-        while (childArray[i]) {
-          if (childArray[i].nodeType === Node.TEXT_NODE) {
-            if (!childArray[i].textContent === "") {
-              isBr = false;
-            }
-          } else if (childArray[i].nodeType === Node.ELEMENT_NODE) {
-            if (childArray[i].nodeType === "BR") {
-              isBr = true;
-            }
-            if (isBr && childArray[i] === node) {
-              isPreviousBr = true;
-              break;
-            }
-          }
-          i++;
-        }
-        //自身が<div>で、テキストが入っていて、isPreviousBrがtrueならバックスペースをキャンセルする
-        if (
-          node.nodeType === Node.ELEMENT_NODE &&
-          node.tagName === "DIV" &&
-          node.textContent &&
-          isPreviousBr
-        ) {
-          event.preventDefault();
-        } else {
-          return;
-        }
-      }
-
-      //nodeがbodyの一番初めのchildNodeで(""のテキストノードを除く)なら、isFarstChild=true
-      const body = document.getElementById("body");
-      const childArray = Array.from(body.childNodes);
-      let i = 0;
-      let isFarstChild;
-      while (childArray[i]) {
-        if (childArray[i].nodeType === Node.TEXT_NODE) {
-          if (childArray[i].textContent !== "") {
-            isFarstChild = false;
-            break;
-          }
-        } else if (
-          childArray[i].nodeType === Node.ELEMENT_NODE &&
-          childArray[i] === node
-        ) {
-          isFarstChild = true;
-          break;
-        }
-        i++;
-      }
-      //自身が<div>で、isFarstChildがtureで、テキストが入っていないなら
+    // ① キャレットが<div>の外にいる場合
+    if (!parentDiv) {
+      const prev = getNodeBeforeCaret(range);
+      // 直前が<div>なら、テキストがdivに吸収されるのを防ぐ
       if (
-        node.nodeType === Node.ELEMENT_NODE &&
-        node.tagName === "DIV" &&
-        isFarstChild &&
-        !node.textContent
+        prev &&
+        prev !== "text" &&
+        prev.nodeType === Node.ELEMENT_NODE &&
+        prev.tagName === "DIV"
       ) {
-        //bodyが空でないならnodeを削除。bodyが空なら一行入れる
-        if (body.textContent) {
-          node.remove();
-        } else {
-          const br = document.createElement("BR");
-          node.replaceWith(br);
-        }
+        event.preventDefault();
+      }
+      return;
+    }
+
+    // ② キャレットが<div>の中にいる場合
+    const prev = getNodeBeforeCaret(range);
+    // キャレットの手前に、このdiv内の文字や<br>があるか
+    const hasContentBefore =
+      prev === "text" || (prev && parentDiv.contains(prev));
+
+    // 手前に<br>や文字がある → ブラウザ標準のBackspaceに任せる
+    if (hasContentBefore) return;
+
+    // ここに来た = 本当にdivの先頭。ブラウザの結合処理(divがspanになる)を止める
+    event.preventDefault();
+
+    // 空のdivなら削除する(bodyが空になるなら<br>を残す)
+    if (!parentDiv.textContent.replaceAll(ZERO_WIDTH_SPACE, "")) {
+      const body = document.getElementById("body");
+      if (body.textContent.replaceAll(ZERO_WIDTH_SPACE, "")) {
+        parentDiv.remove();
+      } else {
+        parentDiv.replaceWith(document.createElement("BR"));
       }
     }
   }
@@ -777,10 +743,24 @@ function keyController(event) {
 
 //ペースト時にスタイルが写らないように制御
 const handlePaste = (e) => {
-  //イベントを受け取る
   e.preventDefault();
-  const text = e.clipboardData.getData("text/plain");
-  document.execCommand("insertText", false, text);
+  const text = e.clipboardData
+    .getData("text/plain")
+    .replace(/\r\n?/g, "\n") // 改行コードを統一
+    .replace(/\n$/, ""); // 末尾の改行を1つだけ無視
+
+  const lines = text.split("\n");
+  lines.forEach((line, index) => {
+    if (index > 0) document.execCommand("insertLineBreak");
+    if (line) document.execCommand("insertText", false, line);
+  });
 };
 
-export { keyController,titleKeyController,handlePaste, minTitle, code, mainText };
+export {
+  keyController,
+  titleKeyController,
+  handlePaste,
+  minTitle,
+  code,
+  mainText,
+};

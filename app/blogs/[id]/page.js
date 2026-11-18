@@ -29,20 +29,20 @@ export default async function BlogPages({ params }) {
   return (
     <>
       <Base>
-        <Card className="font-bold text-2xl text-center">
-          <div className="text-gray-400">
+        <Card>
+          <div className={cn("text-gray-400",textSize.sm)}>
             作成日:{created} 更新:{updated}
           </div>
-          <div className={cn("font-bold", textSize.lg, "text-center")}>
+          <div className={cn("font-bold break-words", textSize.lg, "text-center")}>
             <HTMLChanger text={pageData.title} />
           </div>
 
-          <div className="text-gray-400 flex justify-end">
+          <div className={cn("text-gray-400 flex justify-end",textSize.sm)}>
             閲覧数:
             <HistoryManager pageId={id} />
           </div>
 
-          <div className="flex flex-col gap-2 px-2 lg:px-8">
+          <div className={cn("flex flex-col gap-2 px-2 lg:px-8",textSize.base)}>
             <HTMLChanger text={pageData.body_text} />
           </div>
         </Card>

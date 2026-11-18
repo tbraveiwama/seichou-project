@@ -14,36 +14,32 @@ export default function BlogLinkList({
   sessionSetter,
 }) {
   //コンポーネント関数の実行中に、親を再レンダリングしてしまうとエラーが出るのでセッターは受け取らない
+  //localPageInfoは、ページの情報を記録し格納、後でconditonと比較する用のstate（初期のページ番号は1）
   const [localPageInfo, setLocalPageInfo] = useState(pageInfo);
   //となると、復元用のeffectを作り、復元した後でデータを取得する必要がある(二重送信対策)
   const [localIsRestored, setLocalIsRestored] = useState(false);
+  //conditonから分割代入
+  const { currentView, sort, searchWord, itemsDisplayed, ascending } =
+    condition;
+  //可読性
+  const pageNum = localPageInfo.pageNum;
+  //保守性意識 キーを文字列化して一括比較
+  const conditionKey = JSON.stringify(condition);
+  //conditionの中身が変わったことを検知し、新しい条件・1ページ目に書き換える
+  //コンポーネント関数の実行中にstateが置き換わったら、レンダリングを捨てて(returnが描画されない)もう一度再レンダリングが走る仕様
+  //useEffectも、DOM反映後に実行されるものなので、レンダリングが捨てられた場合は実行されないので二重取得もしない
+  if (conditionKey !== localPageInfo.key) {
+    setLocalPageInfo({ key: conditionKey, pageNum: 1 });
+  }
+
   //復元用
   useEffect(() => {
     if (isRestored) {
       //親コンポーネントで、pageInfo.pageNumはsessionStorageからとってきたが、keyは取ってきていないのでconditionを入れる
-      setLocalPageInfo({ key: condition, pageNum: pageInfo.pageNum });
+      setLocalPageInfo({ key: conditionKey, pageNum: pageInfo.pageNum });
       setLocalIsRestored(true);
     }
   }, [isRestored]);
-  //conditonから分割代入
-  const { currentView, sort, searchWord, itemsDisplayed, ascending } =
-    condition;
-  //pageInfoは、ページの情報を記録し格納、後でconditonと比較する用のstate（初期のページ番号は1）
-  //可読性
-  const pageNum = localPageInfo.pageNum;
-  const pageInfoKey = localPageInfo.key;
-  //conditionの中身が変わったことを検知し、新しい条件・1ページ目に書き換える
-  //コンポーネント関数の実行中にstateが置き換わったら、レンダリングを捨てて(returnが描画されない)もう一度再レンダリングが走る仕様
-  //useEffectも、DOM反映後に実行されるものなので、レンダリングが捨てられた場合は実行されないので二重取得もしない
-  if (
-    pageInfoKey.currentView !== currentView ||
-    pageInfoKey.sort !== sort ||
-    pageInfoKey.searchWord !== searchWord ||
-    pageInfoKey.itemsDisplayed !== itemsDisplayed ||
-    pageInfoKey.ascending !== ascending
-  ) {
-    setLocalPageInfo({ key: condition, pageNum: 1 });
-  }
 
   const [pageList, setPageList] = useState([]);
   //ロード画面
@@ -174,7 +170,6 @@ export default function BlogLinkList({
       //履歴で絞り込み
       query = query.in("page_id", historyIdArray);
       if (sort === "viewed") {
-
         //pageListの各オブジェクトにviewedというプロパティを追加するための処理
         //LocalStorageの配列をpage_idがキー、viewedが値のMapで保存
         const viewedMap = new Map(
@@ -342,11 +337,11 @@ export default function BlogLinkList({
   );
 
   function nextPage() {
-    setLocalPageInfo({ key: condition, pageNum: pageNum + 1 });
+    setLocalPageInfo({ key: conditionKey, pageNum: pageNum + 1 });
   }
 
   function prevPage() {
-    setLocalPageInfo({ key: condition, pageNum: pageNum - 1 });
+    setLocalPageInfo({ key: conditionKey, pageNum: pageNum - 1 });
   }
 
   return (

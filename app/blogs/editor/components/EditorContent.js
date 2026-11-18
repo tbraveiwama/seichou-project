@@ -249,7 +249,10 @@ export default function EditorContent() {
             ref={titleRef}
           ></div>
           <div
-            className="flex flex-col gap-2 px-2 lg:px-8 text-lg"
+            className={cn(
+              "flex flex-col gap-2 px-2 lg:px-8 text-lg",
+              textSize.base,
+            )}
             id="body"
             contentEditable="true"
             onKeyDown={keyController}

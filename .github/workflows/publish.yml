@@ -1,3 +1,5 @@
+# supabase Edge Functionsから起動し、ファイルをビルド、デプロイしなおす
+# SSGなので、DBに記事のデータが増えるたびに行う必要があるため、この構成にしている
 name: Deploy SSG
 
 on:
