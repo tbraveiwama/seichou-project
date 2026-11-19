@@ -23,7 +23,7 @@ export default function RootLayout({ children }) {
         <NavigationTracker />
         {/* ヘッダー：全ページの上部に表示 */}
         <Header />
-        <div className="sticky top-0 z-10 bg-sky-300 flex h-6 md:h-8">
+        <div className="sticky top-0 z-10 bg-sky-300 flex h-6 md:h-8 shadow-md">
           {!isEditor && (
             <>
               <HeaderButton link={"/blogs"}> 記事一覧</HeaderButton>

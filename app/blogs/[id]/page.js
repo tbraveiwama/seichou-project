@@ -33,7 +33,7 @@ export default async function BlogPages({ params }) {
           <div className={cn("text-gray-400",textSize.sm)}>
             作成日:{created} 更新:{updated}
           </div>
-          <div className={cn("font-bold break-words", textSize.lg, "text-center")}>
+          <div className={cn("font-bold break-words", textSize.lg, "text-center px-2")}>
             <HTMLChanger text={pageData.title} />
           </div>
 
