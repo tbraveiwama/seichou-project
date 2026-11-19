@@ -1,2 +1,2 @@
 :HL["/seichou-project/_next/static/css/8a4c89a8d233021c.css","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}},"staleTime":300,"buildId":"Q0_omY0RdYBBbiTY-sFa9"}
+0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}},"staleTime":300,"buildId":"kZ8ZF5822jM6hxC8l98GP"}
