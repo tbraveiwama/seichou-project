@@ -315,7 +315,7 @@ export default function BlogLinkList({
       {pageNum > 1 && (
         <button
           type="button"
-          className="bg-gray-50 py-1 px-2 text-gray-500 border border-gray-500 text-lg shrink-0 cursor-pointer"
+          className="bg-gray-50 py-1 px-2 text-gray-500 border border-gray-500 text-lg shrink-0 cursor-pointer hover:bg-gray-300"
           onClick={prevPage}
         >
           ＜
@@ -327,7 +327,7 @@ export default function BlogLinkList({
       {pageNum < maxPage && (
         <button
           type="button"
-          className="bg-gray-50 py-1 px-2 text-gray-500 border border-gray-500 text-lg shrink-0 cursor-pointer"
+          className="bg-gray-50 py-1 px-2 text-gray-500 border border-gray-500 text-lg shrink-0 cursor-pointer hover:bg-gray-300"
           onClick={nextPage}
         >
           ＞

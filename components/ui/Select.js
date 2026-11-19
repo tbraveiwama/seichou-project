@@ -14,7 +14,7 @@ export default function Select({ children, ...props }) {
         "w-20",
         "lg:w-32",
         "shadow-md",
-        textSize.sm,
+        textSize.xs,
         "font-bold",
         "text-white",
         "cursor-pointer",

@@ -6,7 +6,7 @@ export default function HeaderButton({ children,link }) {
   return (
     <Link
       href={link}
-      className={cn("inline-block","h-full","w-25","lg:w-40","text-center",textSize.xs,"text-white","bg-blue-200","py-1","hover:bg-blue-300 font-bold")}
+      className={cn("inline-block","h-full","w-25","lg:w-40","flex", "items-center", "justify-center",textSize.xs,"text-white","bg-blue-200","py-1","hover:bg-blue-300 font-bold")}
     >{children}</Link>
   );
 }

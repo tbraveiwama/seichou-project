@@ -35,7 +35,7 @@ export default function Button({
     <button
       type="button"
       onClick={isActive ? onClick : undefined}
-      className={`${bgClasses[bg]} ${hoverClasses[bgh]} ${textClasses[text]} rounded-full shadow-md ${cs} shrink-0 h-8 lg:h-10 w-20 lg:w-32 ${textSize.base} font-bold shrink-0`}
+      className={`${bgClasses[bg]} ${hoverClasses[bgh]} ${textClasses[text]} rounded-full shadow-md ${cs} shrink-0 h-8 lg:h-10 w-20 lg:w-32 ${textSize.xs} font-bold shrink-0`}
       {...props}
     >
       {children}

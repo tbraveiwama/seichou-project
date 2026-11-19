@@ -25,7 +25,7 @@ export default function TitleCard({
           <div className="text-gray-400 px-2">
             閲覧日時:{viewed}
           </div>
-          <div className="px-2 whitespace-nowrap lg:whitespace-normal overflow-hidden lg:wrap-break-word">
+          <div className="px-2 whitespace-nowrap lg:whitespace-normal overflow-x-scroll lg:wrap-break-word">
             <HTMLChanger text={title} />
           </div>
           <div className="text-gray-400 flex justify-end pr-2">
@@ -46,7 +46,7 @@ export default function TitleCard({
         <div className="text-gray-400 px-2">
           作成日:{date}｜最終更新日:{updated}
         </div>
-        <div className="px-2 whitespace-nowrap lg:whitespace-normal overflow-hidden lg:wrap-break-word">
+        <div className="px-2 whitespace-nowrap lg:whitespace-normal overflow-x-scroll lg:wrap-break-word">
           <HTMLChanger text={title} />
         </div>
         <div className="text-gray-400 flex justify-end pr-2">

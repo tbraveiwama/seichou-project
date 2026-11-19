@@ -54,11 +54,11 @@ export default function SearchMenu({
         </Button>
         <Select value={sort} onChange={(e) => sortExe(e)}>
           {currentView === "history" && (
-            <option value="viewed">閲覧日時 ▼</option>
+            <option value="viewed">閲覧日時</option>
           )}
-          <option value="created">作成日時 ▼</option>
-          <option value="updated">更新日時 ▼</option>
-          <option value="views">閲覧数 ▼</option>
+          <option value="created">作成日時</option>
+          <option value="updated">更新日時</option>
+          <option value="views">閲覧数</option>
         </Select>
         {isLogin && (
           <Link href="/blogs/editor" className="hidden lg:inline">

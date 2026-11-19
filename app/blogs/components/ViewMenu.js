@@ -4,6 +4,7 @@ import { textSize } from "@/lib/textStyle";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import { useRef } from "react";
+import ViewTab from "./ViewTab";
 
 export default function ViewMenu({
   currentView,
@@ -46,11 +47,9 @@ export default function ViewMenu({
   const ViewTabs =
     currentView === "articles" ? (
       <>
-        <span className="bg-sky-300 px-4 pt-1 text-xl rounded-t-xl text-white shrink-0">
-          記事
-        </span>
-        <span
-          className="bg-sky-200 px-4 pt-1 text-xl rounded-t-xl text-white shrink-0 cursor-pointer hover:bg-sky-300"
+        <ViewTab>記事</ViewTab>
+        <ViewTab
+          active={true}
           onClick={() => {
             //並び順を強制的に「閲覧日時」に
             setSort("viewed");
@@ -66,12 +65,12 @@ export default function ViewMenu({
           }}
         >
           履歴
-        </span>
+        </ViewTab>
       </>
     ) : (
       <>
-        <span
-          className="bg-sky-200 px-4 pt-1 text-xl rounded-t-xl text-white shrink-0 cursor-pointer hover:bg-sky-300"
+        <ViewTab
+          active={true}
           onClick={() => {
             //並び順が「閲覧日時」のとき、「作成日時」に変える
             if (sort === "viewed") {
@@ -85,10 +84,8 @@ export default function ViewMenu({
           }}
         >
           記事
-        </span>
-        <span className="bg-sky-300 px-4 pt-1 text-xl rounded-t-xl text-white shrink-0">
-          履歴
-        </span>
+        </ViewTab>
+        <ViewTab>履歴</ViewTab>
       </>
     );
   return (
@@ -126,8 +123,8 @@ export default function ViewMenu({
               changeOrder(e.target.value);
             }}
           >
-            <option value="ascending">昇順▼</option>
-            <option value="descending">降順▼</option>
+            <option value="ascending">昇順</option>
+            <option value="descending">降順</option>
           </select>
         </span>
         <span
