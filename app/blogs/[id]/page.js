@@ -30,14 +30,14 @@ export default async function BlogPages({ params }) {
     <>
       <Base>
         <Card>
-          <div className={cn("text-gray-400",textSize.sm)}>
+          <div className={cn("text-gray-400",textSize.xs)}>
             作成日:{created}｜最終更新日:{updated}
           </div>
           <div className={cn("font-bold break-words", textSize.lg, "text-center px-2")}>
             <HTMLChanger text={pageData.title} />
           </div>
 
-          <div className={cn("text-gray-400 flex justify-end",textSize.sm)}>
+          <div className={cn("text-gray-400 flex justify-end",textSize.xs)}>
             閲覧数:
             <HistoryManager pageId={id} />
           </div>
