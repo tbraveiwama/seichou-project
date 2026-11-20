@@ -104,8 +104,6 @@ export default function EditorContent() {
       setIsActive(false);
       const title = titleRef.current.innerHTML;
       const body = bodyRef.current.innerHTML;
-      //title未入力の場合返す
-      console.log(title.trim());
       if (title.trim() === "<br>" || title.trim() === "") {
         await errorMsg("エラー", "タイトルが入力されていません");
         setIsActive(true);
@@ -118,7 +116,6 @@ export default function EditorContent() {
           .from("pages")
           .update({ title: title, body_text: body, updated: now.toISOString() })
           .eq("page_id", pageId)
-          .select();
         if (error) {
           console.log("APIエラー:", error);
           await errorMsg("APIエラーが発生しました");
@@ -194,6 +191,15 @@ export default function EditorContent() {
           setIsActive(true);
           return;
         }
+        //履歴から削除
+        const historyArray = JSON.parse(localStorage.getItem("history") ?? "[]");
+        const index = historyArray.indexOf(String(pageId));
+        if (index !== -1) {
+          historyArray.splice(index, 1);
+          localStorage.setItem("history", JSON.stringify(historyArray));
+        } else {
+          console.log("localStorageエラー:履歴無し");
+        }
         // supabaseEdigeFunction->gitHubActions起動
         const { error: deployError } =
           await supabase.functions.invoke("trigger-deploy");
@@ -205,15 +211,6 @@ export default function EditorContent() {
           );
           router.push("/blogs");
           return;
-        }
-        //履歴から削除
-        const historyArray = JSON.parse(localStorage.getItem("history"));
-        if (historyArray.indexOf(String(pageId) !== -1)) {
-          const index = historyArray.indexOf(String(pageId));
-          historyArray.splice(index, 1);
-          localStorage.setItem("history", JSON.stringify(historyArray));
-        } else {
-          console.log("localStorageエラー:履歴無し");
         }
         await Swal.fire({
           title: "削除しました",

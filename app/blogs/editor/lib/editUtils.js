@@ -3,12 +3,6 @@ const ZERO_WIDTH_SPACE = "\u200B";
 
 //使いたいプロパティを配列に格納
 const styleArray = ["font-size", "font-weight", "color"];
-// const styleText = {
-//   code: "min-height:24px;background-color:#4b5563;border-radius:12px;color:white;padding:8px;margin-block:8px;",
-//   minTitle:
-//     "font-weight:700;font-size:24px;line-height:32px;border-bottom:1px solid;padding-bottom:4px;margin-block:8px;",
-//   mainText: "font-weight: normal;font-size: 16px",
-// };
 
 //selectionとrangeを取得。選択範囲がbody外ならisOKをfalseに
 function getSelectionAndRange() {
@@ -33,72 +27,6 @@ function getSelectionAndRange() {
     selection: selection,
     range: range,
   };
-}
-
-//その他の文字操作用※未完成
-function wrapSelection(p) {
-  const { isOk, selection, range } = getSelectionAndRange();
-  if (!isOk) return;
-
-  //選択範囲がない場合の処理
-  //開始位置と終了位置が同じならtrueを返す
-  if (selection.isCollapsed) {
-    //<div>内に入っていれば中断
-    if (callNodeInElement(selection.anchorNode, "DIV")) return;
-    const newSpan = document.createElement("span");
-    newSpan.style.cssText = p;
-    //DOMの都合で「幅０だが一文字ある」状態の文字列を挿入する(これがないとキャレットを置く足場がない)
-    const zwspNode = document.createTextNode(ZERO_WIDTH_SPACE);
-    newSpan.appendChild(zwspNode);
-    range.insertNode(newSpan);
-    //新規範囲作成
-    const newRange = document.createRange();
-    newRange.setStart(newSpan.firstChild, 1);
-    newRange.collapse(true);
-    //範囲変更
-    selection.removeAllRanges();
-    selection.addRange(newRange);
-    return;
-  }
-
-  //div内にいるのか、divを囲んでいるのか、始点又は終点がdiv内にあるかを判断し、適切な処理を行う
-  switch (getDivSelectionRelation(selection)) {
-    case "outside": {
-      wrap(range, selection, "span", p);
-      break;
-    }
-    case "inside": {
-      wrap(range, selection, "span", p);
-      break;
-    }
-    case "enclosed": {
-      //切り出し
-      const content = range.extractContents();
-      //content内の<div>を配列化
-      const divArray = Array.from(content.querySelectorAll("div"));
-      //<div>の数だけループ
-      divArray.forEach((div) => {
-        //rangeを作って<div>を指定
-        const divRange = document.createRange();
-        divRange.selectNodeContents(div);
-        // ラップ
-        wrap(divRange, selection, "span", p);
-      });
-      range.insertNode(content);
-
-      //残りの部分をラップ
-      const firstRange = document.createRange();
-      firstRange.setStart(range.startContainer, range.startOffset);
-      firstRange.setEndBefore(divArray[0]);
-      wrap(firstRange, selection, "span", p);
-
-      const endRange = document.createRange();
-      endRange.setStartAfter(divArray[divArray.length - 1]);
-      endRange.setEnd(range.endContainer, range.endOffset);
-      wrap(endRange, selection, "span", p);
-    }
-  }
-  cleanUp("span");
 }
 
 //本文用
@@ -187,7 +115,6 @@ function code() {
 function wrapDiv(className, childText) {
   const { isOk, selection, range } = getSelectionAndRange();
   if (!isOk) return;
-  console.log(getDivSelectionRelation(selection));
 
   //挿入するエレメントを宣言
   const div = document.createElement("div");
@@ -276,7 +203,6 @@ function wrapDiv(className, childText) {
         //rangeを広げる
         const anchor = callNodeInElement(range.startContainer, "DIV");
         const focus = callNodeInElement(range.endContainer, "DIV");
-        console.log(anchor);
         if (anchor && anchor.className === className) {
           range.setStartBefore(anchor);
         }
@@ -299,39 +225,17 @@ function wrapDiv(className, childText) {
   }
 }
 
-//rangeをspanに置き換え
+//rangeをelementに置き換え
 function wrap(range, selection, element = "span", className = null) {
-  //空のタグを生成
-  const draftSpan = document.createElement(element);
-
   const newSpan = document.createElement(element);
 
-  //rangeが指す範囲をもとのDOMから切り取って取り出す(タグの不整合があってもうまく補完してくれる)
-  const content = range.extractContents();
-
-  //加工したいのはspanタグのみなので配列に全spanタグの参照を格納
-  const spanArray = Array.from(content.querySelectorAll(element));
-
-  //子要素にも自分のstyleを追加
-  spanArray.forEach((s) => {
-    Array.from(draftSpan.style).forEach((ds) => {
-      s.style.setProperty(ds, draftSpan.style.getPropertyValue(ds));
-    });
-  });
-
-  //最後にdraftSpanのstyleプロパティをnewSpanに追加
-  Array.from(draftSpan.style).forEach((ds) => {
-    newSpan.style.setProperty(ds, draftSpan.style.getPropertyValue(ds));
-  });
-
-  //newSpanの子要素に切り取った部分を追加
-  newSpan.appendChild(content);
-  //id追加
+  //rangeが指す範囲を切り取って、新しい要素に入れる(タグの不整合は補完される)
+  newSpan.appendChild(range.extractContents());
   if (className) {
     newSpan.className = className;
   }
 
-  //extractContents()で中身を抜いたことで、range自体は「中身が空になった、元の位置を指すマーカー」として残っているので、そこにinsertNodeで新しいspanをはめ込む。
+  //extractContents()後のrangeは元の位置を指すので、そこに挿入
   range.insertNode(newSpan);
 
   selection.removeAllRanges();
@@ -601,7 +505,7 @@ function mergeAdjacentStyleTags(tag) {
   body.normalize();
 }
 
-//DB軽量化のため、挿入したZERO_WIDTH_SPACEを削除する
+//DB軽量化のため、ZERO_WIDTH_SPACEだけのタグを削除する
 function cleanZwspTag(tag) {
   const body = document.getElementById("body");
   let changed = true;
@@ -616,10 +520,6 @@ function cleanZwspTag(tag) {
       }
     });
   }
-}
-
-function cleanZwsp(html) {
-  return html.replaceAll(ZERO_WIDTH_SPACE, "");
 }
 
 //タイトルは改行禁止制御
@@ -664,7 +564,6 @@ function getNodeBeforeCaret(range) {
   }
 }
 
-//キーボード制御
 //キーボード制御
 function keyController(event) {
   // ===== Enter =====
@@ -713,6 +612,12 @@ function keyController(event) {
         prev.tagName === "DIV"
       ) {
         event.preventDefault();
+
+        // キャレットの右側(同じ行)に文字があるか
+        if (hasTextAfterCaretInLine(range)) return; // あれば何もしない(キャンセルのみ)
+
+        // 空の段落: 段落を消して、直前のdivの最後の文字の直後にキャレットを置く
+        removeEmptyLineAfterDiv(prev, range, selection);
       }
       return;
     }
@@ -739,6 +644,65 @@ function keyController(event) {
       }
     }
   }
+}
+
+// キャレットから行末(次の<br>か<div>か#bodyの終わり)までに、文字があるか
+function hasTextAfterCaretInLine(range) {
+  const body = document.getElementById("body");
+  const probe = document.createRange();
+  probe.setStart(range.startContainer, range.startOffset);
+  probe.setEnd(body, body.childNodes.length);
+  const frag = probe.cloneContents();
+
+  for (const n of frag.childNodes) {
+    if (
+      n.nodeType === Node.ELEMENT_NODE &&
+      (n.tagName === "BR" || n.tagName === "DIV")
+    ) {
+      break; // 行の終わり
+    }
+    if (n.textContent.replaceAll(ZERO_WIDTH_SPACE, "") !== "") return true;
+  }
+  return false;
+}
+
+// divの直後の空行(キャレット位置の<br>など)を消して、divの末尾にキャレットを置く
+function removeEmptyLineAfterDiv(divNode, range, selection) {
+  // 消す対象: キャレットのすぐ後ろにある<br>(空段落を表す改行)
+  let target = null;
+  const c = range.startContainer;
+  if (c.nodeType === Node.ELEMENT_NODE) {
+    target = c.childNodes[range.startOffset] ?? null;
+  } else {
+    target = c.nextSibling;
+  }
+  if (
+    target &&
+    target.nodeType === Node.ELEMENT_NODE &&
+    target.tagName === "BR"
+  ) {
+    target.remove();
+  }
+
+  // 最後のテキストノード(ZWSPは除く)の末尾にキャレットを置く
+  const walker = document.createTreeWalker(divNode, NodeFilter.SHOW_TEXT);
+  let last = null;
+  while (walker.nextNode()) {
+    if (
+      walker.currentNode.textContent.replaceAll(ZERO_WIDTH_SPACE, "") !== ""
+    ) {
+      last = walker.currentNode;
+    }
+  }
+  const r = document.createRange();
+  if (last) {
+    r.setStart(last, last.textContent.length);
+  } else {
+    r.selectNodeContents(divNode);
+  }
+  r.collapse(true);
+  selection.removeAllRanges();
+  selection.addRange(r);
 }
 
 //ペースト時にスタイルが写らないように制御
